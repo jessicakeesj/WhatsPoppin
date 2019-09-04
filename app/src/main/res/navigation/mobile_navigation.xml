@@ -7,31 +7,31 @@
 
     <fragment
         android:id="@+id/nav_map"
-        android:name="com.example.whatspoppin.ui.home.HomeFragment"
+        android:name="com.example.whatspoppin.ui.mapview.MapViewFragment"
         android:label="@string/menu_map"
         tools:layout="@layout/fragment_mapview" />
 
     <fragment
         android:id="@+id/nav_eventList"
-        android:name="com.example.whatspoppin.ui.gallery.GalleryFragment"
+        android:name="com.example.whatspoppin.ui.eventlist.EventListFragment"
         android:label="@string/menu_eventList"
         tools:layout="@layout/fragment_eventlist" />
 
     <fragment
         android:id="@+id/nav_recommendations"
-        android:name="com.example.whatspoppin.ui.slideshow.SlideshowFragment"
+        android:name="com.example.whatspoppin.ui.recommendations.RecommendationsFragment"
         android:label="@string/menu_recommendations"
         tools:layout="@layout/fragment_recommendations" />
 
     <fragment
         android:id="@+id/nav_bookmarks"
-        android:name="com.example.whatspoppin.ui.tools.ToolsFragment"
+        android:name="com.example.whatspoppin.ui.bookmarks.BookmarksFragment"
         android:label="@string/menu_bookmarks"
         tools:layout="@layout/fragment_bookmarks" />
 
     <fragment
         android:id="@+id/nav_editpreferences"
-        android:name="com.example.whatspoppin.ui.share.ShareFragment"
+        android:name="com.example.whatspoppin.ui.editpreferences.EditPreferencesFragment"
         android:label="@string/menu_editPreferences"
         tools:layout="@layout/fragment_editpreferences" />
 

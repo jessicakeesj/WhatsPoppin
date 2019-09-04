@@ -1,16 +1,16 @@
-package com.example.whatspoppin.ui.share;
+package com.example.whatspoppin.ui.recommendations;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class ShareViewModel extends ViewModel {
+public class RecommendationsViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public ShareViewModel() {
+    public RecommendationsViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is share fragment");
+        mText.setValue("This is slideshow fragment");
     }
 
     public LiveData<String> getText() {

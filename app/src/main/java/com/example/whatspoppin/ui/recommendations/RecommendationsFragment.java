@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.slideshow;
+package com.example.whatspoppin.ui.recommendations;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.example.whatspoppin.R;
 
-public class SlideshowFragment extends Fragment {
+public class RecommendationsFragment extends Fragment {
 
-    private SlideshowViewModel slideshowViewModel;
+    private RecommendationsViewModel recommendationsViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        slideshowViewModel =
-                ViewModelProviders.of(this).get(SlideshowViewModel.class);
+        recommendationsViewModel =
+                ViewModelProviders.of(this).get(RecommendationsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_recommendations, container, false);
         final TextView textView = root.findViewById(R.id.text_slideshow);
-        slideshowViewModel.getText().observe(this, new Observer<String>() {
+        recommendationsViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
