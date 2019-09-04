@@ -23,7 +23,7 @@ public class MapViewFragment extends Fragment {
         mapViewViewModel =
                 ViewModelProviders.of(this).get(MapViewViewModel.class);
         View root = inflater.inflate(R.layout.fragment_mapview, container, false);
-        final TextView textView = root.findViewById(R.id.text_home);
+        final TextView textView = root.findViewById(R.id.text_mapview);
         mapViewViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {

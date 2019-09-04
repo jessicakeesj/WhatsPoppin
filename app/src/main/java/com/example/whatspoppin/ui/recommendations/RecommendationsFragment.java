@@ -23,7 +23,7 @@ public class RecommendationsFragment extends Fragment {
         recommendationsViewModel =
                 ViewModelProviders.of(this).get(RecommendationsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_recommendations, container, false);
-        final TextView textView = root.findViewById(R.id.text_slideshow);
+        final TextView textView = root.findViewById(R.id.text_recommendations);
         recommendationsViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {

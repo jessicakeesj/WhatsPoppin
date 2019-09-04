@@ -23,7 +23,7 @@ public class EditPreferencesFragment extends Fragment {
         editPreferencesViewModel =
                 ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
         View root = inflater.inflate(R.layout.fragment_editpreferences, container, false);
-        final TextView textView = root.findViewById(R.id.text_share);
+        final TextView textView = root.findViewById(R.id.text_editpreferences);
         editPreferencesViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
