@@ -33,7 +33,7 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener {
 
         // Handle button clicks
         if(v.getId()==R.id.SignInBtn){
-            Intent send=new Intent(getApplicationContext(),MainActivity.class);
+            Intent send=new Intent(getApplicationContext(),NavDrawer.class);
             startActivity(send);
             this.finish();
         }
