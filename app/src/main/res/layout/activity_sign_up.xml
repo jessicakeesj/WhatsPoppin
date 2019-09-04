@@ -36,8 +36,8 @@
         <Button
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:text="Sign in"
-            android:id="@+id/SignInBtn"
+            android:text="Sign Up"
+            android:id="@+id/SignUpBtn"
             android:layout_marginTop="25dp"
             android:background="@color/colorDarkRed"
             android:textColor="@color/colorWhite"
@@ -46,8 +46,8 @@
         <Button
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:text="Create an account"
-            android:id="@+id/SignUpBtn"
+            android:text="Back"
+            android:id="@+id/BackBtn"
             android:layout_marginTop="10dp"
             android:background="@color/colorSnow"
             android:textColor="@color/colorBlack"
