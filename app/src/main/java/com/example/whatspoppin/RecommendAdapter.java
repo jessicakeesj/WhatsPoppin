@@ -9,19 +9,17 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class EventAdapter extends BaseAdapter {
-    private ArrayList<Event> eventList = new ArrayList<Event>();
+public class RecommendAdapter extends BaseAdapter {
+    private ArrayList<Event> recommendList = new ArrayList<Event>();
     private Context context;
 
-    public EventAdapter(Context context) {
+    public RecommendAdapter(Context context) {
         this.context = context;
 
-        Event eventA = new Event("EventA", "DateA");
-        Event eventB = new Event("EventB", "DateB");
         Event eventC = new Event("EventC", "DateC");
-        eventList.add(eventA);
-        eventList.add(eventB);
-        eventList.add(eventC);
+        Event eventD = new Event("EventD", "DateD");
+        recommendList.add(eventC);
+        recommendList.add(eventD);
         //CommitteeDatabaseAdapter dbAdapter = new CommitteeDatabaseAdapter(context);
         //committeeList = dbAdapter.readAllCommittees();
     }
@@ -35,10 +33,10 @@ public class EventAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        Event event = eventList.get(position);
+        Event event = recommendList.get(position);
 
-        View v = vi.inflate(R.layout.eventlist_item, null);
-        TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
+        View v = vi.inflate(R.layout.recommendlist_item, null);
+        TextView eventName = (TextView) v.findViewById(R.id.text_recommendName);
 
         eventName.setText(event.getEventName());
         return v;
@@ -46,12 +44,12 @@ public class EventAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return eventList.size();
+        return recommendList.size();
     }
 
     @Override
     public Event getItem(int position) {
-        return eventList.get(position);
+        return recommendList.get(position);
     }
 
     @Override

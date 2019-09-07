@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.eventlist;
+package com.example.whatspoppin;
 
 public class Event {
     private String eventName;

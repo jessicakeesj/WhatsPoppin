@@ -4,32 +4,31 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.annotation.Nullable;
+import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-
+import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.R;
 
 public class BookmarksFragment extends Fragment {
 
     private BookmarksViewModel bookmarksViewModel;
+    private BookmarkAdapter bookmarkAdapter;
+    private ListView bookmarkList;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        bookmarksViewModel =
-                ViewModelProviders.of(this).get(BookmarksViewModel.class);
+        bookmarksViewModel = ViewModelProviders.of(this).get(BookmarksViewModel.class);
         View root = inflater.inflate(R.layout.fragment_bookmarks, container, false);
-        final TextView textView = root.findViewById(R.id.text_bookmarks);
-        bookmarksViewModel.getText().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
         return root;
+    }
+
+    @Override
+    public void onViewCreated (View view, Bundle savedInstanceState) {
+        bookmarkList = (ListView) view.findViewById(R.id.list_bookmarkList);
+        bookmarkAdapter = new BookmarkAdapter(getActivity().getApplicationContext());
+        bookmarkList.setAdapter(bookmarkAdapter);
     }
 }
