@@ -14,4 +14,6 @@
     <string name="menu_bookmarks">Bookmarks</string>
     <string name="menu_editPreferences">Edit Preferences</string>
     <string name="menu_send">Send</string>
+    <string name="google_maps_key">AIzaSyAsp1Hy1IAZrQ1o07BOAiVuO2fIHVeWZYU</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
