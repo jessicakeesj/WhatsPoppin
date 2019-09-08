@@ -24,21 +24,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="All" />
+            android:text="All"
+            android:background="@drawable/mybutton"
+            android:layout_margin="1dp"/>
 
         <Button
             android:id="@+id/map_recommend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Recommended" />
+            android:text="Recommended"
+            android:background="@drawable/mybutton"
+            android:layout_margin="1dp"/>
 
         <Button
             android:id="@+id/map_bookmarks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Bookmarks" />
+            android:text="Bookmarks"
+            android:background="@drawable/mybutton"
+            android:layout_margin="1dp"/>
 
     </LinearLayout>
 
