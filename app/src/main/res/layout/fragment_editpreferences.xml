@@ -1,19 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="8dp"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/text_editpreferences"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
+        android:layout_margin="8dp"
+        android:text="My Interests"
+        android:textSize="25sp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/preference_chipgroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
+
+<!--        <com.google.android.material.chip.Chip-->
+<!--            style="@style/Widget.MaterialComponents.Chip.Filter"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Attraction" />-->
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:id="@+id/text_preferredlocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="Preferred Location"
+        android:textSize="25sp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:labelFor="@+id/text_preferredlocation"
+        android:layout_marginBottom="50dp"
+        android:inputType="textPostalAddress"
+        android:autofillHints="events location"/>
+    
+<!--    <fragment android:id="@+id/autocomplete_fragment"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"-->
+<!--        />-->
+
+    <Switch
+        android:id="@+id/notification_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
         android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Receive Notification" />
+
+</LinearLayout>
