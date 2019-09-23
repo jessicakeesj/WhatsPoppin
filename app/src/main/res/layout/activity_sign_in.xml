@@ -22,16 +22,17 @@
         android:gravity="bottom|center_horizontal">
 
         <EditText
-            android:id="@+id/emailInput"
+            android:id="@+id/si_emailInput"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:hint="Enter Email" />
 
         <EditText
+            android:id="@+id/si_pwdInput"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:hint="Enter Password"
-            android:id="@+id/pwdInput"/>
+            android:inputType="textPassword"/>
 
         <Button
             android:layout_width="300dp"

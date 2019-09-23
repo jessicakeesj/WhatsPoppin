@@ -8,6 +8,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.UserInfo;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -15,11 +17,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
+import android.widget.TextView;
 
 public class NavDrawer extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
-
+    private TextView emailTextView;
+    private FirebaseAuth mAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +48,10 @@ public class NavDrawer extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.nav_drawer, menu);
+        mAuth = FirebaseAuth.getInstance();
+
+        emailTextView = findViewById(R.id.emailTextView);
+        emailTextView.setText(mAuth.getCurrentUser().getEmail());
         return true;
     }
 

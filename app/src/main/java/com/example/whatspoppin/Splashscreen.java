@@ -13,7 +13,7 @@ public class Splashscreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splashscreen);
-        progressBar = (ProgressBar) findViewById(R.id.pBar);
+        progressBar = findViewById(R.id.pBar);
         Thread thread=new Thread(){
             @Override
             public void run() {

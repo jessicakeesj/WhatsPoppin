@@ -4,7 +4,8 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorWhite">
+    android:background="@color/colorWhite"
+    tools:context=".SignUp">
 
     <ImageView
         android:id="@+id/imageView"
@@ -22,16 +23,17 @@
         android:gravity="bottom|center_horizontal">
 
         <EditText
-            android:id="@+id/emailInput"
+            android:id="@+id/su_emailInput"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:hint="Enter Email" />
 
         <EditText
+            android:id="@+id/su_pwdInput"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:hint="Enter Password"
-            android:id="@+id/pwdInput"/>
+            android:inputType="textPassword"/>
 
         <Button
             android:layout_width="300dp"

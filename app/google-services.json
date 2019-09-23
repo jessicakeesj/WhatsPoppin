@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1061168279481",
+    "firebase_url": "https://whatspoppin-252305.firebaseio.com",
+    "project_id": "whatspoppin-252305",
+    "storage_bucket": "whatspoppin-252305.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1061168279481:android:054c949f073137bc145068",
+        "android_client_info": {
+          "package_name": "com.example.whatspoppin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1061168279481-jiq5lf6q8adk7v213snc4qjsirtj3jbe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.whatspoppin",
+            "certificate_hash": "19f60ffcccaa29a63af7ce3d21ca1cba0de67dec"
+          }
+        },
+        {
+          "client_id": "1061168279481-6jjuk8hai7fdtsa8mvl7b0lqrs0fk62g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBjE1RP_LhzapEXNIOWVfVGXpBTa_0ueo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1061168279481-6jjuk8hai7fdtsa8mvl7b0lqrs0fk62g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
