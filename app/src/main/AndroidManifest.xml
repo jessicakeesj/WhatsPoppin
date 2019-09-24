@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/splashscreen"
@@ -11,13 +15,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.eventlist.fragment_eventdetails"></activity>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+
         <activity
             android:name=".NavDrawer"
             android:label="@string/title_activity_nav_drawer"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".SignUp" />
         <activity android:name=".SignIn" />
         <activity android:name=".MainActivity" />
@@ -29,7 +36,5 @@
             </intent-filter>
         </activity>
     </application>
-    <uses-feature
-        android:glEsVersion="0x00020000"
-        android:required="true"/>
+
 </manifest>

@@ -24,11 +24,6 @@ public class RecommendAdapter extends BaseAdapter {
         //committeeList = dbAdapter.readAllCommittees();
     }
 
-    /*public void updateDataSet() {
-        CommitteeDatabaseAdapter dbAdapter = new CommitteeDatabaseAdapter(context);
-        committeeList = dbAdapter.readAllCommittees();
-    }*/
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
