@@ -1,5 +1,6 @@
 package com.example.whatspoppin.ui.eventlist;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class EventListFragment extends ListFragment {
@@ -49,6 +51,24 @@ public class EventListFragment extends ListFragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = (TextView) view.findViewById(R.id.text_eventName);
                 Toast.makeText(getActivity().getApplicationContext(), tv.getText().toString(), Toast.LENGTH_SHORT).show();
+
+
+                /*Bundle args = new Bundle();
+                args.putString("eventName", tv.getText().toString());
+                EventDetailsFragment newFragment = new EventDetailsFragment();
+                newFragment.setArguments(args);*/
+
+                // Launching new Activity on selecting single List Item
+                //Intent intent = new Intent(getContext(), EventDetailsFragment.class);
+                //intent.putExtra("eventName", tv.getText().toString());
+
+                Intent intent = new Intent(getContext(), EventDetailsFragment.class);
+                Bundle args = new Bundle();
+                args.putSerializable("EVENTLIST",(Serializable)eventArrayList);
+                intent.putExtra("BUNDLE",args);
+                //intent.putExtra("EVENTLIST", eventArrayList);
+                intent.putExtra("eventName", tv.getText().toString());
+                startActivity(intent);
             }
         });
     }

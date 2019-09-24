@@ -1,6 +1,8 @@
 package com.example.whatspoppin;
 
-public class Event {
+import java.io.Serializable;
+
+public class Event implements Serializable {
     private String eventName;
     private String eventAddress;
     private String eventCategory;
