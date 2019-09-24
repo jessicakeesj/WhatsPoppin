@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:text="My Interests"
+        android:text="@string/editPreferences_interest"
         android:textSize="25sp" />
 
     <com.google.android.material.chip.ChipGroup
@@ -32,17 +32,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:text="Preferred Location"
+        android:text="@string/editPreferences_location"
         android:textSize="25sp" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:labelFor="@+id/text_preferredlocation"
+        android:hint="events location"
         android:layout_marginBottom="50dp"
-        android:inputType="textPostalAddress"
-        android:autofillHints="events location"/>
-    
+        android:inputType="textPostalAddress"/>
+
 <!--    <fragment android:id="@+id/autocomplete_fragment"-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="wrap_content"-->
@@ -55,6 +55,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:textSize="20sp"
-        android:text="Receive Notification" />
+        android:text="@string/editPreferences_notification" />
 
 </LinearLayout>

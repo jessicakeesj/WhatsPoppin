@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
@@ -44,17 +45,18 @@ public class EventDetailsFragment extends AppCompatActivity {
         eventArrayList = (ArrayList<Event>) args.getSerializable("EVENTLIST");
         eventName = intent.getExtras().getString("eventName");
 
-        eventNameTV = (TextView) findViewById(R.id.details_eventName);
-        eventSummaryTV = (TextView) findViewById(R.id.details_eventSummary);
-        eventImage = (ImageView) findViewById(R.id.details_eventImage);
-        eventDateTime = (TextView) findViewById(R.id.details_eventDateTime);
+        eventNameTV = findViewById(R.id.details_eventName);
+        eventSummaryTV = findViewById(R.id.details_eventSummary);
+        eventImage = findViewById(R.id.details_eventImage);
+        eventDateTime = findViewById(R.id.details_eventDateTime);
 
         for(Event e : eventArrayList){
             if(e.getEventName().equals(eventName)){
 
                 URL url = null;
                 try {
-                    Picasso.get().load(e.getEventImageUrl()).into(eventImage);
+//                    displayToast(e.getEventImageUrl());
+                    Picasso.get().load("https://www." + e.getEventImageUrl()).into(eventImage);
                     /*url = new URL("https://www." + e.getEventImageUrl());
                     Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
                     eventImage.setImageBitmap(bmp);*/
@@ -63,15 +65,20 @@ public class EventDetailsFragment extends AppCompatActivity {
                 }
 
                 eventNameTV.setText(eventName);
-                eventDateTime.setText(e.getEvent_datetime_start() + " - " + e.getEvent_datetime_end() +
-                        "\n" + e.getEventLocationSummary());
+                String datetime = e.getEvent_datetime_start() + " - " + e.getEvent_datetime_end() +
+                        "\n" + e.getEventLocationSummary();
+                eventDateTime.setText(datetime);
                 eventSummaryTV.setText(e.getEventDescription());
             }
         }
     }
 
     public void onViewCreated (View view, Bundle savedInstanceState) {
-        eventNameTV = (TextView) view.findViewById(R.id.details_eventName);
+        eventNameTV = view.findViewById(R.id.details_eventName);
         eventNameTV.setText("Hello");
+    }
+
+    public void displayToast(String msg) {
+        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
     }
 }

@@ -9,6 +9,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -51,7 +52,9 @@ public class NavDrawer extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         emailTextView = findViewById(R.id.emailTextView);
-        emailTextView.setText(mAuth.getCurrentUser().getEmail());
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null)
+            emailTextView.setText(currentUser.getEmail());
         return true;
     }
 
