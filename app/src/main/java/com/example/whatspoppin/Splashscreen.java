@@ -23,7 +23,7 @@ public class Splashscreen extends AppCompatActivity {
                             progressBar.setProgress(progress);
                         }
                         //sleep(3000); //run for 3 secs then sleep
-                        Intent intent= new Intent(getApplicationContext(),NavDrawer.class); //to direct it to this activity after the splash screen finishes
+                        Intent intent= new Intent(getApplicationContext(),SignIn.class); //to direct it to this activity after the splash screen finishes
                         startActivity(intent);
                         finish(); //to stop it from rerunning
                     } catch (InterruptedException e) {
