@@ -10,9 +10,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
+
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.EventAdapter;
 import com.example.whatspoppin.R;
@@ -51,7 +53,7 @@ public class EventListFragment extends ListFragment {
     }
 
     @Override
-    public void onViewCreated (View view, Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         eventList = (ListView) view.findViewById(R.id.list_eventList);
         //getFirebaseData();
         getFireStoreData();
@@ -63,74 +65,59 @@ public class EventListFragment extends ListFragment {
 
                 Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                 Bundle args = new Bundle();
-                args.putSerializable("EVENTLIST",(Serializable)eventArrayList);
-                intent.putExtra("BUNDLE",args);
+                args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
+                intent.putExtra("BUNDLE", args);
                 intent.putExtra("eventName", tv.getText().toString());
                 startActivity(intent);
             }
         });
     }
 
-    public void getFireStoreData(){
+    public void getFireStoreData() {
         eventArrayList.clear();
+        db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document != null) {
+                            String name = document.getId();
+                            String address = document.getString("address");
+                            String category = document.getString("category");
+                            String description = document.getString("description");
+                            String datetime_start = document.getString("datetime_start");
+                            String datetime_end = document.getString("datetime_end");
+                            String url = document.getString("url");
+                            String imageUrl = document.getString("imageUrl");
+                            String lng = document.get("lng") == null ? "null" : document.get("lng").toString();
+                            String lat = document.get("lat") == null ? "null" : document.get("lat").toString();
+                            String location_summary = document.getString("location_summary");
+                            String source = document.getString("source");
 
-        db.collection("events")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                if (document != null) {
-                                    String name = document.getId();
-                                    String address = document.getString("address");
-                                    String category = document.getString("category");
-                                    String description = document.getString("description");
-                                    String datetime_start = document.getString("datetime_start");
-                                    String datetime_end = document.getString("datetime_end");
-                                    String url = document.getString("url");
-                                    String imageUrl = document.getString("imageUrl");
-
-                                    String lng, lat;
-                                    if(document.get("lng") == null){
-                                        lng = "null";
-                                    }else{
-                                        lng = document.get("lng").toString();
-                                    }
-                                    if(document.get("lat") == null){
-                                        lat = "null";
-                                    }else{
-                                        lat = document.get("lat").toString();
-                                    }
-
-                                    String location_summary = document.getString("location_summary");
-                                    String source = document.getString("source");
-
-                                    Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                                            imageUrl, lng, lat, location_summary, source);
-                                    eventArrayList.add(event);
-
-                                } else {
-                                    Log.d("saveToEventArrayList", "No such document");
-                                }
-                                Log.d("EventListFirestore", document.getId() + " => " + document.getData());
-                            }
-                            eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
-                            eventList.setAdapter(eventAdapter);
-                            eventAdapter.notifyDataSetChanged();
+                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                                    imageUrl, lng, lat, location_summary, source);
+                            eventArrayList.add(event);
                         } else {
-                            Log.w("EventListFirestore", "Error getting documents.", task.getException());
+                            Log.d("saveToEventArrayList", "No such document");
                         }
+                        Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                });
+                    eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
+                    eventList.setAdapter(eventAdapter);
+                    eventAdapter.notifyDataSetChanged();
+                } else {
+                    Log.w("EventListFirestore", "Error getting documents.", task.getException());
+                }
+            }
+        });
     }
 
-    public void getFirebaseData(){
+    public void getFirebaseData() {
         eventArrayList.clear();
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String name = ds.child("name").getValue(String.class);
                     String address = ds.child("address").getValue(String.class);
                     String category = ds.child("category").getValue(String.class);

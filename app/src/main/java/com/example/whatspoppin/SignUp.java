@@ -75,9 +75,9 @@ public class SignUp extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(SignUp.this, SignIn.class);
                             startActivity(intent);
-                        } else {
                             Log.e(TAG, "onComplete: Failed=" + task.getException().getMessage());
-                            Toast.makeText(getApplicationContext(), "Registration failed! Please try again later", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Registration failed!" + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+//                            Toast.makeText(getApplicationContext(), "Registration failed! Please try again later", Toast.LENGTH_LONG).show();
                         }
                     }
                 });

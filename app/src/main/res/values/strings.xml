@@ -20,4 +20,6 @@
     <string name="editPreferences_interest">My Interests</string>
     <string name="editPreferences_location">Preferred Location</string>
     <string name="editPreferences_notification">Receive Notifications</string>
+
+    <string name="map_fab_all">All</string>
 </resources>
