@@ -1,6 +1,7 @@
 package com.example.whatspoppin;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +40,8 @@ public class EventAdapter extends BaseAdapter {
         TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
 
         String dateString = formatDate(event.getEvent_datetime_start());
-
-        eventName.setText(event.getEventName() + "\n" + dateString);
+        String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
+        eventName.setText(Html.fromHtml(sourceString));
         return v;
     }
 
