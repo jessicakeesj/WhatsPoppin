@@ -9,7 +9,7 @@ import android.os.Bundle;
 
 public class Splashscreen extends AppCompatActivity {
     private ProgressBar progressBar;
-    int progress;
+    private int progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
