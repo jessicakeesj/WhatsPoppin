@@ -51,15 +51,11 @@ public class EventDetailsFragment extends AppCompatActivity {
         eventDateTime = findViewById(R.id.details_eventDateTime);
 
         for(Event e : eventArrayList){
-            if(e.getEventName().equals(eventName)){
+            if(e.getEventName().equals(eventName.trim())){
 
                 URL url = null;
                 try {
-//                    displayToast(e.getEventImageUrl());
                     Picasso.get().load("https://www." + e.getEventImageUrl()).into(eventImage);
-                    /*url = new URL("https://www." + e.getEventImageUrl());
-                    Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                    eventImage.setImageBitmap(bmp);*/
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

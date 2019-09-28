@@ -31,6 +31,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class EventListFragment extends ListFragment {
@@ -61,13 +62,14 @@ public class EventListFragment extends ListFragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = (TextView) view.findViewById(R.id.text_eventName);
-                //Toast.makeText(getActivity().getApplicationContext(), tv.getText().toString(), Toast.LENGTH_SHORT).show();
+                String[] eventName = tv.getText().toString().split("\n");
+                Toast.makeText(getActivity().getApplicationContext(), eventName[0], Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                 Bundle args = new Bundle();
                 args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
                 intent.putExtra("BUNDLE", args);
-                intent.putExtra("eventName", tv.getText().toString());
+                intent.putExtra("eventName", eventName[0].trim());
                 startActivity(intent);
             }
         });
