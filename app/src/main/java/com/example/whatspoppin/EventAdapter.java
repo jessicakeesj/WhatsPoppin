@@ -6,43 +6,108 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
-public class EventAdapter extends BaseAdapter {
+public class EventAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Event> eventList = new ArrayList<Event>();
+    private ArrayList<Event> filteredList = new ArrayList<Event>();
     private Context context;
     private EventAdapter eventAdapter;
 
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference dbRef = database.getReference("events");
 
+    private static LayoutInflater inflater = null;
+
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public EventAdapter(Context context, ArrayList<Event> eventList) {
         this.context = context;
         this.eventList = eventList;
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.filteredList = new ArrayList<Event>();
+        this.filteredList.addAll(eventList);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Event event = filteredList.get(position);
+        //View v = vi.inflate(R.layout.eventlist_item, null);
+        View v = convertView;
+        if (convertView == null)v = inflater.inflate(R.layout.eventlist_item, null);
 
-        Event event = eventList.get(position);
-
-        View v = vi.inflate(R.layout.eventlist_item, null);
         TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
 
         String dateString = formatDate(event.getEvent_datetime_start());
         String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
         eventName.setText(Html.fromHtml(sourceString));
         return v;
+    }
+
+    @Override
+    public int getCount() {
+        return filteredList.size();
+    }
+
+    @Override
+    public Event getItem(int position) {
+        return filteredList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public Filter getFilter()
+    {
+        return new Filter()
+        {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence)
+            {
+                FilterResults results = new FilterResults();
+
+                //If there's nothing to filter on, return the original data to list
+                if(charSequence == null || charSequence.length() == 0)
+                {
+                    results.values = eventList;
+                    results.count = eventList.size();
+                } else
+                {
+                    ArrayList<Event> filterResultsData = new ArrayList<Event>();
+
+                    for(Event e : eventList)
+                    {
+                        if(e.getEventName().contains(charSequence))
+                        {
+                            filterResultsData.add(e);
+                        }
+                    }
+
+                    results.values = filterResultsData;
+                    results.count = filterResultsData.size();
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults)
+            {
+                filteredList = (ArrayList<Event>)filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     private String formatDate(String eventDate){
@@ -82,20 +147,5 @@ public class EventAdapter extends BaseAdapter {
             e.printStackTrace();
         }
         return dateString;
-    }
-
-    @Override
-    public int getCount() {
-        return eventList.size();
-    }
-
-    @Override
-    public Event getItem(int position) {
-        return eventList.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
     }
 }

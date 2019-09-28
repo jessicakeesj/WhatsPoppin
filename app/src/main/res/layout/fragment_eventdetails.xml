@@ -10,8 +10,10 @@
 
         <ImageView
             android:id="@+id/details_eventImage"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:layout_width="match_parent"
-            android:layout_height="300dp" />
+            android:layout_height="match_parent" />
 
         <TextView
             android:id="@+id/details_eventName"
@@ -44,6 +46,16 @@
             android:paddingBottom="10dp"
             android:textColor="@color/colorBlack" />
 
+        <TextView
+            android:id="@+id/details_eventSource"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/colorBlack" />
+
         <LinearLayout
             android:id="@+id/llBottomContainer2"
             android:layout_width="fill_parent"
@@ -54,6 +66,7 @@
             android:padding="20dp">
 
             <Button
+                android:id="@+id/details_eventLink"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

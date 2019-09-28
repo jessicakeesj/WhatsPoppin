@@ -2,11 +2,15 @@ package com.example.whatspoppin.ui.eventlist;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +45,8 @@ public class EventListFragment extends ListFragment {
     private ListView eventList;
     private List<String> eventNameList = new ArrayList<>();
 
+    private EditText search;
+
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference dbRef = database.getReference("events");
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -56,14 +62,21 @@ public class EventListFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         eventList = (ListView) view.findViewById(R.id.list_eventList);
+        search = (EditText) view.findViewById(R.id.inputSearch);
+
         //getFirebaseData();
         getFireStoreData();
+
+        eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
+        eventList.setAdapter(eventAdapter);
+        eventAdapter.notifyDataSetChanged();
+
         eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = (TextView) view.findViewById(R.id.text_eventName);
                 String[] eventName = tv.getText().toString().split("\n");
-                Toast.makeText(getActivity().getApplicationContext(), eventName[0], Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity().getApplicationContext(), eventName[0], Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                 Bundle args = new Bundle();
@@ -73,7 +86,27 @@ public class EventListFragment extends ListFragment {
                 startActivity(intent);
             }
         });
+
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                EventListFragment.this.eventAdapter.getFilter().filter(s);
+                eventList.setAdapter(eventAdapter);
+                eventAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
+
 
     public void getFireStoreData() {
         eventArrayList.clear();
@@ -114,7 +147,7 @@ public class EventListFragment extends ListFragment {
         });
     }
 
-    public void getFirebaseData() {
+/*    public void getFirebaseData() {
         eventArrayList.clear();
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -149,5 +182,5 @@ public class EventListFragment extends ListFragment {
                 System.out.println("The read failed: " + databaseError.getCode());
             }
         });
-    }
+    }*/
 }
