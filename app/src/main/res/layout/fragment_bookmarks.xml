@@ -4,8 +4,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Editext for Search -->
+    <EditText android:id="@+id/bookmarks_inputSearch"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search events"
+        android:inputType="textVisiblePassword"
+        android:drawableStart="@drawable/ic_search_foreground"
+        android:drawablePadding="0dp"/>
+
     <ListView
-        android:id="@+id/list_bookmarkList"
+        android:id="@+id/bookmarks_eventList"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:divider="@color/material_blue_grey_800"

@@ -32,7 +32,7 @@ public class RecommendationsFragment extends Fragment {
 
     @Override
     public void onViewCreated (View view, Bundle savedInstanceState) {
-        recommendList = (ListView) view.findViewById(R.id.list_bookmarkList);
+        /*recommendList = (ListView) view.findViewById(R.id.list_bookmarkList);
         recommendAdapter = new RecommendAdapter(getActivity().getApplicationContext());
         recommendList.setAdapter(recommendAdapter);
 
@@ -42,6 +42,6 @@ public class RecommendationsFragment extends Fragment {
                 TextView tv = (TextView) view.findViewById(R.id.text_recommendName);
                 Toast.makeText(getActivity().getApplicationContext(), tv.getText().toString(), Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
     }
 }

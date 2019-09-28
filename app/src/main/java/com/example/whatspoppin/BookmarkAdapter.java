@@ -1,78 +1,146 @@
 package com.example.whatspoppin;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-public class BookmarkAdapter extends BaseAdapter {
-    private ArrayList<Event> bookmarkList = new ArrayList<Event>();
+public class BookmarkAdapter extends BaseAdapter implements Filterable {
+    private ArrayList<Event> bookmarksList = new ArrayList<Event>();
+    private ArrayList<Event> filteredList = new ArrayList<Event>();
     private Context context;
+    private EventAdapter eventAdapter;
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private static LayoutInflater inflater = null;
 
-    public BookmarkAdapter(Context context) {
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    public BookmarkAdapter(Context context, ArrayList<Event> bookmarksList) {
         this.context = context;
-
-        Event eventB = new Event("EventB", "DateB");
-        Event eventC = new Event("EventC", "DateC");
-        Event eventD = new Event("EventD", "DateD");
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventC);
-        bookmarkList.add(eventD);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-        bookmarkList.add(eventB);
-
-        //CommitteeDatabaseAdapter dbAdapter = new CommitteeDatabaseAdapter(context);
-        //committeeList = dbAdapter.readAllCommittees();
+        this.bookmarksList = bookmarksList;
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.filteredList = new ArrayList<Event>();
+        this.filteredList.addAll(bookmarksList);
     }
-
-    /*public void updateDataSet() {
-        CommitteeDatabaseAdapter dbAdapter = new CommitteeDatabaseAdapter(context);
-        committeeList = dbAdapter.readAllCommittees();
-    }*/
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Event event = filteredList.get(position);
+        View v = convertView;
+        if (convertView == null)v = inflater.inflate(R.layout.eventlist_item, null);
 
-        Event event = bookmarkList.get(position);
+        TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
 
-        View v = vi.inflate(R.layout.bookmarklist_item, null);
-        TextView eventName = (TextView) v.findViewById(R.id.text_bookmarkName);
-
-        eventName.setText(event.getEventName());
+        String dateString = formatDate(event.getEvent_datetime_start());
+        String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
+        eventName.setText(Html.fromHtml(sourceString));
         return v;
     }
 
     @Override
     public int getCount() {
-        return bookmarkList.size();
+        return filteredList.size();
     }
 
     @Override
     public Event getItem(int position) {
-        return bookmarkList.get(position);
+        return filteredList.get(position);
     }
 
     @Override
     public long getItemId(int position) {
         return position;
+    }
+
+    @Override
+    public Filter getFilter()
+    {
+        return new Filter()
+        {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence)
+            {
+                FilterResults results = new FilterResults();
+
+                //If there's nothing to filter on, return the original data to list
+                if(charSequence == null || charSequence.length() == 0)
+                {
+                    results.values = bookmarksList;
+                    results.count = bookmarksList.size();
+                } else
+                {
+                    ArrayList<Event> filterResultsData = new ArrayList<Event>();
+
+                    for(Event e : bookmarksList)
+                    {
+                        if(e.getEventName().contains(charSequence))
+                        {
+                            filterResultsData.add(e);
+                        }
+                    }
+
+                    results.values = filterResultsData;
+                    results.count = filterResultsData.size();
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults)
+            {
+                filteredList = (ArrayList<Event>)filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
+
+    private String formatDate(String eventDate){
+        String dateString = null;
+
+        String[] weekdays = new String[7];
+        weekdays[0] = "Sunday";
+        weekdays[1] = "Monday";
+        weekdays[2] = "Tuesday";
+        weekdays[3] = "Wednesday";
+        weekdays[4] = "Thursday";
+        weekdays[5] = "Friday";
+        weekdays[6] = "Saturday";
+
+        String[] months = new String[12];
+        months[0] = "January";
+        months[1] = "Feburary";
+        months[2] = "March";
+        months[3] = "April";
+        months[4] = "May";
+        months[5] = "June";
+        months[6] = "July";
+        months[7] = "August";
+        months[8] = "September";
+        months[9] = "October";
+        months[10] = "November";
+        months[11] = "December";
+
+        try {
+            Date date = simpleDateFormat.parse(eventDate);
+            int weekday = date.getDay();
+            int day = date.getDate();
+            int month = date.getMonth();
+            int year = date.getYear() + 1900;
+            dateString = day + " " + months[month] + " " + year + " (" + weekdays[weekday] +")";
+        } catch (java.text.ParseException e) {
+            e.printStackTrace();
+        }
+        return dateString;
     }
 }

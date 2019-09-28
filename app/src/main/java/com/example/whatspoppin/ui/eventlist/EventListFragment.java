@@ -19,16 +19,21 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.EventAdapter;
 import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -36,20 +41,19 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class EventListFragment extends ListFragment {
     private ArrayList<Event> eventArrayList = new ArrayList<Event>();
+    private ArrayList<Event> bookmarkArrayList = new ArrayList<Event>();
     private EventListViewModel eventListViewModel;
     private EventAdapter eventAdapter;
     private ListView eventList;
-    private List<String> eventNameList = new ArrayList<>();
-
     private EditText search;
-
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference dbRef = database.getReference("events");
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth mAuth;
+    private DocumentReference usersDoc;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -62,10 +66,17 @@ public class EventListFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         eventList = (ListView) view.findViewById(R.id.list_eventList);
-        search = (EditText) view.findViewById(R.id.inputSearch);
+        search = (EditText) view.findViewById(R.id.eventlist_inputSearch);
+
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            usersDoc = db.collection("users").document(currentUser.getUid());
+        }
 
         //getFirebaseData();
         getFireStoreData();
+        getBookmarksFirestore();
 
         eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
         eventList.setAdapter(eventAdapter);
@@ -81,6 +92,7 @@ public class EventListFragment extends ListFragment {
                 Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                 Bundle args = new Bundle();
                 args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
+                args.putSerializable("BOOKMARKLIST", (Serializable) bookmarkArrayList);
                 intent.putExtra("BUNDLE", args);
                 intent.putExtra("eventName", eventName[0].trim());
                 startActivity(intent);
@@ -142,6 +154,52 @@ public class EventListFragment extends ListFragment {
                     eventAdapter.notifyDataSetChanged();
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
+                }
+            }
+        });
+    }
+
+    public void getBookmarksFirestore(){
+        bookmarkArrayList.clear();
+
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        String email = document.getString("userEmail");
+
+                        //HashMap<String, String> testMap = new HashMap<String, String>();
+                        ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
+
+                        for(HashMap<String,String> testMap : bkm){
+                            //HashMap<String, String> testMap = new HashMap<String, String>();
+                            //testMap = (HashMap<String, String>) document.get("bookmarks");
+                            String name = testMap.get("eventName");
+                            String address = testMap.get("eventAddress");
+                            String category = testMap.get("eventCategory");
+                            String description = testMap.get("eventDescription");
+                            String datetime_start = testMap.get("event_datetime_start");
+                            String datetime_end = testMap.get("event_datetime_end");
+                            String url = testMap.get("eventUrl");
+                            String imageUrl = testMap.get("eventImageUrl");
+                            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
+                            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
+                            String location_summary = testMap.get("eventLocationSummary");
+                            String source = testMap.get("eventSource");
+
+                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                                    imageUrl, lng, lat, location_summary, source);
+                            bookmarkArrayList.add(event);
+                        }
+
+                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getBookmarks", "No such document");
+                    }
+                } else {
+                    Log.d("getBookmarks", "get failed with ", task.getException());
                 }
             }
         });

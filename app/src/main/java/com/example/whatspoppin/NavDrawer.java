@@ -52,9 +52,9 @@ public class NavDrawer extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         emailTextView = findViewById(R.id.emailTextView);
-//        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        if (currentUser != null)
-//            emailTextView.setText(currentUser.getEmail());
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null)
+            emailTextView.setText(currentUser.getEmail());
         return true;
     }
 

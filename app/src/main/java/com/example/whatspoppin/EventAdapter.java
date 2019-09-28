@@ -24,7 +24,7 @@ public class EventAdapter extends BaseAdapter implements Filterable {
     private EventAdapter eventAdapter;
 
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference dbRef = database.getReference("events");
+    //private DatabaseReference dbRef = database.getReference("events");
 
     private static LayoutInflater inflater = null;
 

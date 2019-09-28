@@ -1,40 +1,72 @@
 package com.example.whatspoppin.ui.eventlist;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class EventDetailsFragment extends AppCompatActivity {
 
     private String eventName;
     private TextView eventNameTV, eventSummaryTV, eventDetails, eventSource;
-    private ImageView eventImage;
+    private ImageView eventImage, bookmarkImg;
     private Button linkBtn;
     private ArrayList<Event> eventArrayList = new ArrayList<Event>();
     private Event event;
-
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private ArrayList<Event> bookmarkList = new ArrayList<>();
+    private DocumentReference usersDoc;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_eventdetails);
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            usersDoc = db.collection("users").document(currentUser.getUid());
+        }
+
+        getBookmarksFirestore_A();
 
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("BUNDLE");
         eventArrayList = (ArrayList<Event>) args.getSerializable("EVENTLIST");
+        bookmarkList = (ArrayList<Event>) args.getSerializable("BOOKMARKLIST");
         eventName = intent.getExtras().getString("eventName");
 
         eventNameTV = findViewById(R.id.details_eventName);
@@ -43,6 +75,7 @@ public class EventDetailsFragment extends AppCompatActivity {
         eventDetails = findViewById(R.id.details_eventDateTime);
         eventSource = findViewById(R.id.details_eventSource);
         linkBtn = findViewById(R.id.details_eventLink);
+        bookmarkImg = (ImageView) findViewById(R.id.details_bookmark);
 
         for (Event e : eventArrayList) {
             if (e.getEventName().trim().equals(eventName.trim())) {
@@ -61,15 +94,131 @@ public class EventDetailsFragment extends AppCompatActivity {
         eventNameTV.setText(eventName);
         String startDate = formatDate(event.getEvent_datetime_start());
         String endDate = formatDate(event.getEvent_datetime_end());
-        eventDetails.setText(startDate + " - " + endDate + "\n" + event.getEventLocationSummary());
+
+        String detailsString = "<b> Event Details: </b>" + "<br>" + startDate + " - " + endDate + "<br>" + event.getEventLocationSummary();
+        eventDetails.setText(Html.fromHtml(detailsString));
         eventSummaryTV.setText(event.getEventDescription());
         eventSource.setText("Source: " + event.getEventSource());
+
+        for(Event e : bookmarkList){
+            if(e.getEventName().trim().equals(event.getEventName().trim())){
+                bookmarkImg.setImageResource(R.drawable.ic_marked);
+                break;
+            }else{
+                bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+            }
+        }
 
         linkBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(event.getEventUrl()));
                 startActivity(browserIntent);
+            }
+        });
+
+        bookmarkImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap marked = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_marked);
+                Bitmap current = ((BitmapDrawable)bookmarkImg.getDrawable()).getBitmap();
+                if (current.sameAs(marked)) {
+                    bookmarkList.remove(event);
+                    updateBookmarksFirestore();
+                    bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+                }else{
+                    bookmarkList.add(event);
+                    updateBookmarksFirestore();
+                    bookmarkImg.setImageResource(R.drawable.ic_marked);
+                }
+            }
+        });
+    }
+
+    public void updateBookmarksFirestore(){
+        usersDoc
+                .update("bookmarks", bookmarkList)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("updateBookmarks", "DocumentSnapshot successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("updateBookmarks", "Error updating document", e);
+                    }
+                });
+    }
+
+    public void getBookmarksFirestore(){
+        bookmarkList.clear();
+
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        String email = document.getString("userEmail");
+                        //HashMap<String, String> testMap = new HashMap<String, String>();
+                        ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
+
+                        for(HashMap<String,String> testMap : bkm){
+                            //HashMap<String, String> testMap = new HashMap<String, String>();
+                            //testMap = (HashMap<String, String>) document.get("bookmarks");
+                            String name = testMap.get("eventName");
+                            String address = testMap.get("eventAddress");
+                            String category = testMap.get("eventCategory");
+                            String description = testMap.get("eventDescription");
+                            String datetime_start = testMap.get("event_datetime_start");
+                            String datetime_end = testMap.get("event_datetime_end");
+                            String url = testMap.get("eventUrl");
+                            String imageUrl = testMap.get("eventImageUrl");
+                            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
+                            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
+                            String location_summary = testMap.get("eventLocationSummary");
+                            String source = testMap.get("eventSource");
+
+                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                                    imageUrl, lng, lat, location_summary, source);
+                            bookmarkList.add(event);
+                        }
+
+                        //bookmarkAdapter = new BookmarkAdapter(getActivity().getApplicationContext(), bookmarkList);
+                        //eventList.setAdapter(bookmarkAdapter);
+                        //bookmarkAdapter.notifyDataSetChanged();
+
+                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getBookmarks", "No such document");
+                    }
+                } else {
+                    Log.d("getBookmarks", "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    public void getBookmarksFirestore_A(){
+        bookmarkList.clear();
+
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        String email = document.getString("userEmail");
+                        bookmarkList = (ArrayList<Event>) document.get("bookmarks");
+                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getBookmarks", "No such document");
+                    }
+                } else {
+                    Log.d("getBookmarks", "get failed with ", task.getException());
+                }
             }
         });
     }

@@ -14,16 +14,33 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.auth.User;
+
+import java.util.ArrayList;
 
 public class SignUp extends AppCompatActivity {
     private Button signup, back;
+    private String email, password;
     private EditText emailTV, pwdTV;
     private FirebaseAuth mAuth;
     private ProgressBar progressBar;
     private static final String TAG = "SignUp Activity";
+
+    private AccountUser user;
+
+    private ArrayList<Event> bookmarks = null;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +71,6 @@ public class SignUp extends AppCompatActivity {
     }
 
     private void registerNewUser() {
-        String email, password;
         email = emailTV.getText().toString();
         password = pwdTV.getText().toString();
 
@@ -73,12 +89,42 @@ public class SignUp extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
+
+                            FirebaseUser currentUser = mAuth.getCurrentUser();
+                            if (currentUser != null){
+                                String userId = currentUser.getUid();
+                                String email = currentUser.getEmail();
+                                user = new AccountUser(userId, email, bookmarks);
+                                setFireStoreData(user);
+                            }
+
                             Intent intent = new Intent(SignUp.this, SignIn.class);
                             startActivity(intent);
+                        }else{
                             Log.e(TAG, "onComplete: Failed=" + task.getException().getMessage());
                             Toast.makeText(getApplicationContext(), "Registration failed!" + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-//                            Toast.makeText(getApplicationContext(), "Registration failed! Please try again later", Toast.LENGTH_LONG).show();
                         }
+                    }
+                });
+    }
+
+    public void setFireStoreData(AccountUser user) {
+        db.collection("users").document(user.getUserId()).set(user);
+    }
+
+    public void save(){
+        db.collection("users")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
                     }
                 });
     }
