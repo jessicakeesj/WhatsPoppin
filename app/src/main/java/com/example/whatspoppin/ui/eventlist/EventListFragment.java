@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.EventAdapter;
 import com.example.whatspoppin.R;
@@ -28,26 +27,16 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 public class EventListFragment extends ListFragment {
     private ArrayList<Event> eventArrayList = new ArrayList<Event>();
@@ -127,6 +116,7 @@ public class EventListFragment extends ListFragment {
         });
     }
 
+    //checks firestore for realtime updates
     public void realtimeFireStoreData() {
         usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -137,18 +127,15 @@ public class EventListFragment extends ListFragment {
                     return;
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    //Log.d(TAG, "Current data: " + snapshot.getData());
                     getFireStoreData();
                     getBookmarksFirestore();
                 } else {
-                    //Log.d(TAG, "Current data: null");
                     getFireStoreData();
                     getBookmarksFirestore();
                 }
             }
         });
     }
-
 
     public void getFireStoreData() {
         eventArrayList.clear();

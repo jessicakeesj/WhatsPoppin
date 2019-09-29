@@ -12,29 +12,23 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
-
 import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
-import com.example.whatspoppin.EventAdapter;
 import com.example.whatspoppin.R;
-import com.example.whatspoppin.ui.bookmarks.BookmarksViewModel;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -128,11 +122,9 @@ public class BookmarksFragment extends ListFragment {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                    //Log.d(TAG, "Current data: " + snapshot.getData());
                     getFireStoreData();
                     getBookmarksFirestore();
                 } else {
-                    //Log.d(TAG, "Current data: null");
                     getFireStoreData();
                     getBookmarksFirestore();
                 }
@@ -188,12 +180,9 @@ public class BookmarksFragment extends ListFragment {
                     if (document.exists()) {
                         bookmarkArrayList.clear();
                         String email = document.getString("userEmail");
-                        //HashMap<String, String> testMap = new HashMap<String, String>();
                         ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
 
                         for(HashMap<String,String> testMap : bkm){
-                            //HashMap<String, String> testMap = new HashMap<String, String>();
-                            //testMap = (HashMap<String, String>) document.get("bookmarks");
                             String name = testMap.get("eventName");
                             String address = testMap.get("eventAddress");
                             String category = testMap.get("eventCategory");

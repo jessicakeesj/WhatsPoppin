@@ -15,10 +15,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
@@ -34,26 +33,29 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import androidx.annotation.NonNull;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-
-import static androidx.core.content.ContextCompat.getSystemService;
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<Event> eventArrayList = new ArrayList<>();
     private ArrayList<MapMarkers> mapMarkers = new ArrayList<>();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GoogleMap mMap;
+    private FirebaseAuth mAuth;
+    private DocumentReference usersDoc;
+
 //    private LocationManager locationManager;
 
     public MapViewFragment() { // Required empty public constructor
@@ -67,7 +69,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            usersDoc = db.collection("users").document(currentUser.getUid());
+        }
+
         getFireStoreData();
+        //realtimeFireStoreData();
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
 
@@ -130,6 +139,27 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
+
+    //checks firestore for realtime updates
+/*    public void realtimeFireStoreData() {
+        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("Listen", "Listen failed.", e);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    //Log.d(TAG, "Current data: " + snapshot.getData());
+                    getFireStoreData();
+                } else {
+                    //Log.d(TAG, "Current data: null");
+                    getFireStoreData();
+                }
+            }
+        });
+    }*/
 
     private void getFireStoreData() {
         eventArrayList.clear();

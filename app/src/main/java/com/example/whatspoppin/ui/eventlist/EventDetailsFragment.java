@@ -2,13 +2,10 @@ package com.example.whatspoppin.ui.eventlist;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
@@ -17,25 +14,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 public class EventDetailsFragment extends AppCompatActivity {
 
@@ -62,7 +54,6 @@ public class EventDetailsFragment extends AppCompatActivity {
         }
 
         bookmarkList.clear();
-        //getBookmarksFirestore();
 
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("BUNDLE");
@@ -167,32 +158,53 @@ public class EventDetailsFragment extends AppCompatActivity {
                 });
     }
 
-    public void hashtoArrayList(ArrayList<HashMap<String,String>> bkm){
-        //ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
-        bookmarkList.clear();
-        for(HashMap<String,String> testMap : bkm){
-            //HashMap<String, String> testMap = new HashMap<String, String>();
-            //testMap = (HashMap<String, String>) document.get("bookmarks");
-            String name = testMap.get("eventName");
-            String address = testMap.get("eventAddress");
-            String category = testMap.get("eventCategory");
-            String description = testMap.get("eventDescription");
-            String datetime_start = testMap.get("event_datetime_start");
-            String datetime_end = testMap.get("event_datetime_end");
-            String url = testMap.get("eventUrl");
-            String imageUrl = testMap.get("eventImageUrl");
-            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
-            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
-            String location_summary = testMap.get("eventLocationSummary");
-            String source = testMap.get("eventSource");
+    private String formatDate(String eventDate){
+        String dateString = null;
 
-            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                    imageUrl, lng, lat, location_summary, source);
-            bookmarkList.add(event);
+        String[] months = new String[12];
+        months[0] = "Jan";
+        months[1] = "Feb";
+        months[2] = "Mar";
+        months[3] = "Apr";
+        months[4] = "May";
+        months[5] = "Jun";
+        months[6] = "Jul";
+        months[7] = "Aug";
+        months[8] = "Sep";
+        months[9] = "Oct";
+        months[10] = "Nov";
+        months[11] = "Dec";
+
+        try {
+            Date date = simpleDateFormat.parse(eventDate);
+            int weekday = date.getDay();
+            int day = date.getDate();
+            int month = date.getMonth();
+            int year = date.getYear() + 1900;
+            int hour = date.getHours();
+            int min = date.getMinutes();
+
+            if(hour < 12){
+                if(min == 0){
+                    dateString = day + " " + months[month] + " " + year + ", " + hour + "AM" ;
+                }else{
+                    dateString = day + " " + months[month] + " " + year + ", " + hour + "." + min + "AM" ;
+                }
+            } else{
+                hour = hour - 12;
+                if(min == 0){
+                    dateString = day + " " + months[month] + " " + year + ", " + hour + "PM" ;
+                }else{
+                    dateString = day + " " + months[month] + " " + year + ", " + hour + "." + min + "PM" ;
+                }
+            }
+        } catch (java.text.ParseException e) {
+            e.printStackTrace();
         }
+        return dateString;
     }
 
-    public void getBookmarksFirestore_(){
+/*    public void getBookmarksFirestore_(){
         bookmarkList.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -271,51 +283,5 @@ public class EventDetailsFragment extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    private String formatDate(String eventDate){
-        String dateString = null;
-
-        String[] months = new String[12];
-        months[0] = "Jan";
-        months[1] = "Feb";
-        months[2] = "Mar";
-        months[3] = "Apr";
-        months[4] = "May";
-        months[5] = "Jun";
-        months[6] = "Jul";
-        months[7] = "Aug";
-        months[8] = "Sep";
-        months[9] = "Oct";
-        months[10] = "Nov";
-        months[11] = "Dec";
-
-        try {
-            Date date = simpleDateFormat.parse(eventDate);
-            int weekday = date.getDay();
-            int day = date.getDate();
-            int month = date.getMonth();
-            int year = date.getYear() + 1900;
-            int hour = date.getHours();
-            int min = date.getMinutes();
-
-            if(hour < 12){
-                if(min == 0){
-                    dateString = day + " " + months[month] + " " + year + ", " + hour + "AM" ;
-                }else{
-                    dateString = day + " " + months[month] + " " + year + ", " + hour + "." + min + "AM" ;
-                }
-            } else{
-                hour = hour - 12;
-                if(min == 0){
-                    dateString = day + " " + months[month] + " " + year + ", " + hour + "PM" ;
-                }else{
-                    dateString = day + " " + months[month] + " " + year + ", " + hour + "." + min + "PM" ;
-                }
-            }
-        } catch (java.text.ParseException e) {
-            e.printStackTrace();
-        }
-        return dateString;
-    }
+    }*/
 }
