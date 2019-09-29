@@ -86,7 +86,7 @@ public class EventListFragment extends ListFragment {
         getBookmarksFirestore();
         realtimeFireStoreData();
 
-        eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
+        eventAdapter = new EventAdapter(getActivity(), eventArrayList);
         eventList.setAdapter(eventAdapter);
         eventAdapter.notifyDataSetChanged();
 
@@ -180,9 +180,11 @@ public class EventListFragment extends ListFragment {
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                    eventAdapter = new EventAdapter(getActivity(), eventArrayList);
-                    eventList.setAdapter(eventAdapter);
-                    eventAdapter.notifyDataSetChanged();
+                    if(getActivity()!=null){
+                        eventAdapter = new EventAdapter(getActivity(), eventArrayList);
+                        eventList.setAdapter(eventAdapter);
+                        eventAdapter.notifyDataSetChanged();
+                    }
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
                 }

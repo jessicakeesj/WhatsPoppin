@@ -29,9 +29,9 @@ public class BookmarkAdapter extends BaseAdapter implements Filterable {
     public BookmarkAdapter(Context context, ArrayList<Event> bookmarksList) {
         this.context = context;
         this.bookmarksList = bookmarksList;
-        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.filteredList = new ArrayList<Event>();
         this.filteredList.addAll(bookmarksList);
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override

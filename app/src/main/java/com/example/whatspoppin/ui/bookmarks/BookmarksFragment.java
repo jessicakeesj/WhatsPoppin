@@ -76,7 +76,7 @@ public class BookmarksFragment extends ListFragment {
         getBookmarksFirestore();
         realtimeFireStoreData();
 
-        bookmarkAdapter = new BookmarkAdapter(getActivity().getApplicationContext(), bookmarkArrayList);
+        bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarkArrayList);
         eventList.setAdapter(bookmarkAdapter);
         bookmarkAdapter.notifyDataSetChanged();
 
@@ -212,9 +212,11 @@ public class BookmarksFragment extends ListFragment {
                             bookmarkArrayList.add(event);
                         }
 
-                        bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarkArrayList);
-                        eventList.setAdapter(bookmarkAdapter);
-                        bookmarkAdapter.notifyDataSetChanged();
+                        if(getActivity()!=null){
+                            bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarkArrayList);
+                            eventList.setAdapter(bookmarkAdapter);
+                            bookmarkAdapter.notifyDataSetChanged();
+                        }
 
                         Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
                     } else {

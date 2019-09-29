@@ -33,9 +33,9 @@ public class EventAdapter extends BaseAdapter implements Filterable {
     public EventAdapter(Context context, ArrayList<Event> eventList) {
         this.context = context;
         this.eventList = eventList;
-        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.filteredList = new ArrayList<Event>();
         this.filteredList.addAll(eventList);
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override

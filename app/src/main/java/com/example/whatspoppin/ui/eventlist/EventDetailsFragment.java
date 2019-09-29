@@ -128,13 +128,16 @@ public class EventDetailsFragment extends AppCompatActivity {
                 Bitmap marked = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_marked);
                 Bitmap current = ((BitmapDrawable)bookmarkImg.getDrawable()).getBitmap();
                 if (current.sameAs(marked)) {
+                    Event mock = null;
                     for(Event e : bookmarkList){
                         if(e.getEventName().trim().equals(event.getEventName().trim())){
-                            bookmarkList.remove(e);
-                            updateBookmarksFirestore();
-                            bookmarkImg.setImageResource(R.drawable.ic_unmarked);
-                            break;
+                            mock = e;
                         }
+                    }
+                    if(mock!=null){
+                        bookmarkList.remove(mock);
+                        updateBookmarksFirestore();
+                        bookmarkImg.setImageResource(R.drawable.ic_unmarked);
                     }
                 }else{
                     if(!bookmarkList.contains(event)){
