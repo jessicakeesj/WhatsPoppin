@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -32,9 +33,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -74,9 +79,12 @@ public class EventListFragment extends ListFragment {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
 
-        //getFirebaseData();
+        eventArrayList.clear();
+        bookmarkArrayList.clear();
+
         getFireStoreData();
         getBookmarksFirestore();
+        realtimeFireStoreData();
 
         eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
         eventList.setAdapter(eventAdapter);
@@ -119,6 +127,28 @@ public class EventListFragment extends ListFragment {
         });
     }
 
+    public void realtimeFireStoreData() {
+        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("Listen", "Listen failed.", e);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    //Log.d(TAG, "Current data: " + snapshot.getData());
+                    getFireStoreData();
+                    getBookmarksFirestore();
+                } else {
+                    //Log.d(TAG, "Current data: null");
+                    getFireStoreData();
+                    getBookmarksFirestore();
+                }
+            }
+        });
+    }
+
 
     public void getFireStoreData() {
         eventArrayList.clear();
@@ -126,6 +156,7 @@ public class EventListFragment extends ListFragment {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
+                    eventArrayList.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         if (document != null) {
                             String name = document.getId();
@@ -149,7 +180,7 @@ public class EventListFragment extends ListFragment {
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                    eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
+                    eventAdapter = new EventAdapter(getActivity(), eventArrayList);
                     eventList.setAdapter(eventAdapter);
                     eventAdapter.notifyDataSetChanged();
                 } else {
@@ -161,21 +192,16 @@ public class EventListFragment extends ListFragment {
 
     public void getBookmarksFirestore(){
         bookmarkArrayList.clear();
-
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
+                        bookmarkArrayList.clear();
                         String email = document.getString("userEmail");
-
-                        //HashMap<String, String> testMap = new HashMap<String, String>();
                         ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
-
                         for(HashMap<String,String> testMap : bkm){
-                            //HashMap<String, String> testMap = new HashMap<String, String>();
-                            //testMap = (HashMap<String, String>) document.get("bookmarks");
                             String name = testMap.get("eventName");
                             String address = testMap.get("eventAddress");
                             String category = testMap.get("eventCategory");
@@ -193,7 +219,6 @@ public class EventListFragment extends ListFragment {
                                     imageUrl, lng, lat, location_summary, source);
                             bookmarkArrayList.add(event);
                         }
-
                         Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getBookmarks", "No such document");

@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -27,9 +28,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -69,6 +74,7 @@ public class BookmarksFragment extends ListFragment {
 
         getFireStoreData();
         getBookmarksFirestore();
+        realtimeFireStoreData();
 
         bookmarkAdapter = new BookmarkAdapter(getActivity().getApplicationContext(), bookmarkArrayList);
         eventList.setAdapter(bookmarkAdapter);
@@ -111,12 +117,36 @@ public class BookmarksFragment extends ListFragment {
         });
     }
 
+    public void realtimeFireStoreData() {
+        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("Listen", "Listen failed.", e);
+                    return;
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    //Log.d(TAG, "Current data: " + snapshot.getData());
+                    getFireStoreData();
+                    getBookmarksFirestore();
+                } else {
+                    //Log.d(TAG, "Current data: null");
+                    getFireStoreData();
+                    getBookmarksFirestore();
+                }
+            }
+        });
+    }
+
     public void getFireStoreData() {
         eventArrayList.clear();
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
+                    eventArrayList.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         if (document != null) {
                             String name = document.getId();
@@ -150,15 +180,14 @@ public class BookmarksFragment extends ListFragment {
 
     public void getBookmarksFirestore(){
         bookmarkArrayList.clear();
-
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
+                        bookmarkArrayList.clear();
                         String email = document.getString("userEmail");
-
                         //HashMap<String, String> testMap = new HashMap<String, String>();
                         ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
 
@@ -183,7 +212,7 @@ public class BookmarksFragment extends ListFragment {
                             bookmarkArrayList.add(event);
                         }
 
-                        bookmarkAdapter = new BookmarkAdapter(getActivity().getApplicationContext(), bookmarkArrayList);
+                        bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarkArrayList);
                         eventList.setAdapter(bookmarkAdapter);
                         bookmarkAdapter.notifyDataSetChanged();
 

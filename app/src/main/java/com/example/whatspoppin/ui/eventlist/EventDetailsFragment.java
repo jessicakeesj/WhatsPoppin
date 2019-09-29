@@ -61,7 +61,8 @@ public class EventDetailsFragment extends AppCompatActivity {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
 
-        getBookmarksFirestore_A();
+        bookmarkList.clear();
+        //getBookmarksFirestore();
 
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("BUNDLE");
@@ -100,12 +101,16 @@ public class EventDetailsFragment extends AppCompatActivity {
         eventSummaryTV.setText(event.getEventDescription());
         eventSource.setText("Source: " + event.getEventSource());
 
-        for(Event e : bookmarkList){
-            if(e.getEventName().trim().equals(event.getEventName().trim())){
-                bookmarkImg.setImageResource(R.drawable.ic_marked);
-                break;
-            }else{
-                bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+        if(bookmarkList.size()== 0){
+            bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+        }else{
+            for(Event e : bookmarkList){
+                if(e.getEventName().trim().equals(event.getEventName().trim())){
+                    bookmarkImg.setImageResource(R.drawable.ic_marked);
+                    break;
+                }else{
+                    bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+                }
             }
         }
 
@@ -123,12 +128,19 @@ public class EventDetailsFragment extends AppCompatActivity {
                 Bitmap marked = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_marked);
                 Bitmap current = ((BitmapDrawable)bookmarkImg.getDrawable()).getBitmap();
                 if (current.sameAs(marked)) {
-                    bookmarkList.remove(event);
-                    updateBookmarksFirestore();
-                    bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+                    for(Event e : bookmarkList){
+                        if(e.getEventName().trim().equals(event.getEventName().trim())){
+                            bookmarkList.remove(e);
+                            updateBookmarksFirestore();
+                            bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+                            break;
+                        }
+                    }
                 }else{
-                    bookmarkList.add(event);
-                    updateBookmarksFirestore();
+                    if(!bookmarkList.contains(event)){
+                        bookmarkList.add(event);
+                        updateBookmarksFirestore();
+                    }
                     bookmarkImg.setImageResource(R.drawable.ic_marked);
                 }
             }
@@ -152,9 +164,33 @@ public class EventDetailsFragment extends AppCompatActivity {
                 });
     }
 
-    public void getBookmarksFirestore(){
+    public void hashtoArrayList(ArrayList<HashMap<String,String>> bkm){
+        //ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
         bookmarkList.clear();
+        for(HashMap<String,String> testMap : bkm){
+            //HashMap<String, String> testMap = new HashMap<String, String>();
+            //testMap = (HashMap<String, String>) document.get("bookmarks");
+            String name = testMap.get("eventName");
+            String address = testMap.get("eventAddress");
+            String category = testMap.get("eventCategory");
+            String description = testMap.get("eventDescription");
+            String datetime_start = testMap.get("event_datetime_start");
+            String datetime_end = testMap.get("event_datetime_end");
+            String url = testMap.get("eventUrl");
+            String imageUrl = testMap.get("eventImageUrl");
+            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
+            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
+            String location_summary = testMap.get("eventLocationSummary");
+            String source = testMap.get("eventSource");
 
+            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                    imageUrl, lng, lat, location_summary, source);
+            bookmarkList.add(event);
+        }
+    }
+
+    public void getBookmarksFirestore_(){
+        bookmarkList.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -162,9 +198,47 @@ public class EventDetailsFragment extends AppCompatActivity {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         String email = document.getString("userEmail");
-                        //HashMap<String, String> testMap = new HashMap<String, String>();
                         ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
 
+                        for(HashMap<String,String> testMap : bkm){
+                            String name = testMap.get("eventName");
+                            String address = testMap.get("eventAddress");
+                            String category = testMap.get("eventCategory");
+                            String description = testMap.get("eventDescription");
+                            String datetime_start = testMap.get("event_datetime_start");
+                            String datetime_end = testMap.get("event_datetime_end");
+                            String url = testMap.get("eventUrl");
+                            String imageUrl = testMap.get("eventImageUrl");
+                            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
+                            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
+                            String location_summary = testMap.get("eventLocationSummary");
+                            String source = testMap.get("eventSource");
+
+                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                                    imageUrl, lng, lat, location_summary, source);
+                            bookmarkList.add(event);
+                        }
+                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getBookmarks", "No such document");
+                    }
+                } else {
+                    Log.d("getBookmarks", "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    public void getBookmarksFirestore(){
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        String email = document.getString("userEmail");
+                        ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
+                        bookmarkList.clear();
                         for(HashMap<String,String> testMap : bkm){
                             //HashMap<String, String> testMap = new HashMap<String, String>();
                             //testMap = (HashMap<String, String>) document.get("bookmarks");
@@ -185,33 +259,6 @@ public class EventDetailsFragment extends AppCompatActivity {
                                     imageUrl, lng, lat, location_summary, source);
                             bookmarkList.add(event);
                         }
-
-                        //bookmarkAdapter = new BookmarkAdapter(getActivity().getApplicationContext(), bookmarkList);
-                        //eventList.setAdapter(bookmarkAdapter);
-                        //bookmarkAdapter.notifyDataSetChanged();
-
-                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        Log.d("getBookmarks", "No such document");
-                    }
-                } else {
-                    Log.d("getBookmarks", "get failed with ", task.getException());
-                }
-            }
-        });
-    }
-
-    public void getBookmarksFirestore_A(){
-        bookmarkList.clear();
-
-        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        String email = document.getString("userEmail");
-                        bookmarkList = (ArrayList<Event>) document.get("bookmarks");
                         Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getBookmarks", "No such document");
