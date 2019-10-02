@@ -5,7 +5,8 @@ import java.util.ArrayList;
 public class AccountUser {
     private String userId;
     private String userEmail;
-    private ArrayList<Event> bookmarks = new ArrayList<>();
+    private ArrayList<Event> bookmarks = new ArrayList<Event>();
+    private ArrayList<String> preferences = new ArrayList<String>();
 
     public AccountUser(){
 
@@ -20,6 +21,13 @@ public class AccountUser {
         this.userId = userId;
         this.userEmail = userEmail;
         this.bookmarks = bookmarks;
+    }
+
+    public AccountUser(String userId, String userEmail, ArrayList<Event> bookmarks, ArrayList<String> preferences) {
+        this.userId = userId;
+        this.userEmail = userEmail;
+        this.bookmarks = bookmarks;
+        this.preferences = preferences;
     }
 
     public String getUserId() {
@@ -44,5 +52,13 @@ public class AccountUser {
 
     public void setBookmarks(ArrayList<Event> bookmarks) {
         this.bookmarks = bookmarks;
+    }
+
+    public ArrayList<String> getPreferences() {
+        return preferences;
+    }
+
+    public void setPreferences(ArrayList<String> preferences) {
+        this.preferences = preferences;
     }
 }

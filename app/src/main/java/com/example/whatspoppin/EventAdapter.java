@@ -21,7 +21,6 @@ public class EventAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Event> eventList = new ArrayList<Event>();
     private ArrayList<Event> filteredList = new ArrayList<Event>();
     private Context context;
-    private EventAdapter eventAdapter;
 
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     //private DatabaseReference dbRef = database.getReference("events");

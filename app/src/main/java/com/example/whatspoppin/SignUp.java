@@ -39,7 +39,8 @@ public class SignUp extends AppCompatActivity {
 
     private AccountUser user;
 
-    private ArrayList<Event> bookmarks = null;
+    private ArrayList<Event> bookmarks = new ArrayList<Event>();
+    private ArrayList<String> preferences = new ArrayList<String>() ;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -73,6 +74,8 @@ public class SignUp extends AppCompatActivity {
     private void registerNewUser() {
         email = emailTV.getText().toString();
         password = pwdTV.getText().toString();
+        bookmarks.clear();
+        preferences.clear();
 
         if (TextUtils.isEmpty(email)) {
             Toast.makeText(getApplicationContext(), "Please enter email!", Toast.LENGTH_LONG).show();
@@ -94,7 +97,7 @@ public class SignUp extends AppCompatActivity {
                             if (currentUser != null){
                                 String userId = currentUser.getUid();
                                 String email = currentUser.getEmail();
-                                user = new AccountUser(userId, email, bookmarks);
+                                user = new AccountUser(userId, email, bookmarks,preferences);
                                 setFireStoreData(user);
                             }
 

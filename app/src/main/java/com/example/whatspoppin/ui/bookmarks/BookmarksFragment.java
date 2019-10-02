@@ -46,6 +46,7 @@ public class BookmarksFragment extends ListFragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DocumentReference usersDoc;
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -61,7 +62,7 @@ public class BookmarksFragment extends ListFragment {
         search = (EditText) view.findViewById(R.id.bookmarks_inputSearch);
 
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
@@ -169,7 +170,6 @@ public class BookmarksFragment extends ListFragment {
         });
     }
 
-
     public void getBookmarksFirestore(){
         bookmarkArrayList.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -180,25 +180,29 @@ public class BookmarksFragment extends ListFragment {
                     if (document.exists()) {
                         bookmarkArrayList.clear();
                         String email = document.getString("userEmail");
-                        ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
+                        String b = String.valueOf(document.get("bookmarks"));
+                        if(b != "null" || b != null){
+                            ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
+                            for(HashMap<String,String> testMap : bkm){
+                                String name = testMap.get("eventName");
+                                String address = testMap.get("eventAddress");
+                                String category = testMap.get("eventCategory");
+                                String description = testMap.get("eventDescription");
+                                String datetime_start = testMap.get("event_datetime_start");
+                                String datetime_end = testMap.get("event_datetime_end");
+                                String url = testMap.get("eventUrl");
+                                String imageUrl = testMap.get("eventImageUrl");
+                                String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
+                                String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
+                                String location_summary = testMap.get("eventLocationSummary");
+                                String source = testMap.get("eventSource");
 
-                        for(HashMap<String,String> testMap : bkm){
-                            String name = testMap.get("eventName");
-                            String address = testMap.get("eventAddress");
-                            String category = testMap.get("eventCategory");
-                            String description = testMap.get("eventDescription");
-                            String datetime_start = testMap.get("event_datetime_start");
-                            String datetime_end = testMap.get("event_datetime_end");
-                            String url = testMap.get("eventUrl");
-                            String imageUrl = testMap.get("eventImageUrl");
-                            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
-                            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
-                            String location_summary = testMap.get("eventLocationSummary");
-                            String source = testMap.get("eventSource");
-
-                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                                    imageUrl, lng, lat, location_summary, source);
-                            bookmarkArrayList.add(event);
+                                Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                                        imageUrl, lng, lat, location_summary, source);
+                                bookmarkArrayList.add(event);
+                            }
+                        }else{
+                            bookmarkArrayList = null;
                         }
 
                         if(getActivity()!=null){
