@@ -191,7 +191,7 @@ public class EventListFragment extends ListFragment {
                         bookmarkArrayList.clear();
                         String email = document.getString("userEmail");
                         String b = String.valueOf(document.get("bookmarks"));
-                        if(b != "null" || b != null){
+                        if(b != "null" || b != null || b != "[]"){
                             ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
                             for(HashMap<String,String> testMap : bkm){
                                 String name = testMap.get("eventName");

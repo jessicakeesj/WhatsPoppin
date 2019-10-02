@@ -19,6 +19,7 @@ import java.util.Date;
 public class RecommendAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Event> recommendList = new ArrayList<Event>();
     private ArrayList<Event> filteredList = new ArrayList<Event>();
+    private ArrayList<String> preferenceList = new ArrayList<String>();
     private Context context;
     private EventAdapter eventAdapter;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -26,11 +27,11 @@ public class RecommendAdapter extends BaseAdapter implements Filterable {
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public RecommendAdapter(Context context, ArrayList<Event> bookmarksList) {
+    public RecommendAdapter(Context context, ArrayList<Event> recommendList) {
         this.context = context;
-        this.recommendList = bookmarksList;
+        this.recommendList = recommendList;
         this.filteredList = new ArrayList<Event>();
-        this.filteredList.addAll(bookmarksList);
+        this.filteredList.addAll(recommendList);
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -38,9 +39,9 @@ public class RecommendAdapter extends BaseAdapter implements Filterable {
     public View getView(int position, View convertView, ViewGroup parent) {
         Event event = filteredList.get(position);
         View v = convertView;
-        if (convertView == null)v = inflater.inflate(R.layout.eventlist_item, null);
+        if (convertView == null)v = inflater.inflate(R.layout.recommendlist_item, null);
 
-        TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
+        TextView eventName = (TextView) v.findViewById(R.id.text_recommendName);
 
         String dateString = formatDate(event.getEvent_datetime_start());
         String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();

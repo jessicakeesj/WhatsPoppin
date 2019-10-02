@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.EventAdapter;
 import com.example.whatspoppin.R;
@@ -36,6 +37,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class EditPreferencesFragment extends Fragment {
 
@@ -93,6 +95,7 @@ public class EditPreferencesFragment extends Fragment {
         //super.onViewCreated(view, savedInstanceState);
 
         getFireStoreData();
+        //getPreferenceFirestore();
         //realtimeFireStoreData();
         preferenceCG = view.findViewById(R.id.preference_chipgroup);
     }
@@ -109,8 +112,10 @@ public class EditPreferencesFragment extends Fragment {
                 }
                 if (snapshot != null && snapshot.exists()) {
                     getFireStoreData();
+                    getPreferenceFirestore();
                 } else {
                     getFireStoreData();
+                    getPreferenceFirestore();
                 }
             }
         });
@@ -134,10 +139,10 @@ public class EditPreferencesFragment extends Fragment {
                         }
                         Log.d("", document.getId() + " => " + document.getData());
                     }
+                    getPreferenceFirestore();
                 } else {
                     Log.w("", "Error getting documents.", task.getException());
                 }
-                setupview();
             }
         });
     }
@@ -155,6 +160,10 @@ public class EditPreferencesFragment extends Fragment {
             newChip.setText(s);
             newChip.setId(num);
 
+            if(categories_Selected.contains(s)){
+                newChip.setChecked(true);
+            }
+
             newChip.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -164,7 +173,7 @@ public class EditPreferencesFragment extends Fragment {
                         categories_Selected.remove(newChip.getText().toString());
                     }
                     updatePrefereceFirestore();
-                    Toast.makeText(getActivity(), "Chip is "+ newChip.getText().toString(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getActivity(), "Chip is "+ newChip.getText().toString(), Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -188,5 +197,37 @@ public class EditPreferencesFragment extends Fragment {
                         Log.w("updatePreferences", "Error updating document", e);
                     }
                 });
+    }
+
+    public void getPreferenceFirestore(){
+        categories_Selected.clear();
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        categories_Selected.clear();
+                        String b = String.valueOf(document.get("preferences"));
+                        if(b != "null" || b != null || b != "[]"){
+                            ArrayList<String> bkm= (ArrayList<String>) document.get("preferences");
+                            for(String testMap : bkm){
+                                String name = testMap;
+                                categories_Selected.add(name);
+                            }
+                        }else{
+                            categories_Selected = null;
+                        }
+
+                        Log.d("getPreferences", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getPreferences", "No such document");
+                    }
+                    setupview();
+                } else {
+                    Log.d("getPreferences", "get failed with ", task.getException());
+                }
+            }
+        });
     }
 }
