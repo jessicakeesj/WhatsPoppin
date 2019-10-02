@@ -1,9 +1,7 @@
 package com.example.whatspoppin;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.widget.ProgressBar;
-
 import android.content.Intent;
 import android.os.Bundle;
 

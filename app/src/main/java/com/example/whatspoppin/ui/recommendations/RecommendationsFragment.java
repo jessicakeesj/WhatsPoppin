@@ -6,22 +6,17 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
-
 import com.example.whatspoppin.Event;
-import com.example.whatspoppin.EventAdapter;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.RecommendAdapter;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
