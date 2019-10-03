@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.Switch;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -35,7 +37,8 @@ public class EditPreferencesFragment extends Fragment {
     private ArrayList<String> eventCategories = new ArrayList<String>();
     private ArrayList<String> categories_Selected = new ArrayList<String>();
     private ChipGroup preferenceCG;
-    private Chip chip;
+    private boolean receiveNotification;
+    private Switch notificationSwitch;
     //firebase
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
@@ -43,8 +46,7 @@ public class EditPreferencesFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        editPreferencesViewModel =
-                ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
+        editPreferencesViewModel = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
         View root = inflater.inflate(R.layout.fragment_editpreferences, container, false);
 
         mAuth = FirebaseAuth.getInstance();
@@ -52,30 +54,6 @@ public class EditPreferencesFragment extends Fragment {
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
-
-//        final TextView textView = root.findViewById(R.id.text_editpreferences);
-//        editPreferencesViewModel.getText().observe(this, new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
-
-        // Populate Preferences Category
-/*
-        String[] categories = {"Attractions", "Conference", "Convention", "Expo", "Festival", "Gala", "Game",
-                "Network", "Party", "Performance", "Race", "Rally", "Retreat", "Screening", "Seminar", "Tour", "Tournament"};
-*/
-
-/*        for (int i = 0; i < categories.length; i++) {
-            Chip newChip = new Chip(getContext());
-            newChip.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            newChip.setChipDrawable(ChipDrawable.createFromAttributes(getContext(), null,
-                    0, R.style.Widget_MaterialComponents_Chip_Filter));
-            newChip.setText(categories[i]);
-            preferenceCG.addView(newChip);
-        }*/
 
         return root;
     }
@@ -88,6 +66,7 @@ public class EditPreferencesFragment extends Fragment {
         //getPreferenceFirestore();
         //realtimeFireStoreData();
         preferenceCG = view.findViewById(R.id.preference_chipgroup);
+        notificationSwitch = view.findViewById(R.id.notification_switch);
     }
 
     //checks firestore for realtime updates
@@ -162,7 +141,7 @@ public class EditPreferencesFragment extends Fragment {
                     }else{
                         categories_Selected.remove(newChip.getText().toString());
                     }
-                    updatePrefereceFirestore();
+                    updatePreferenceFirestore();
                     //Toast.makeText(getActivity(), "Chip is "+ newChip.getText().toString(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -170,11 +149,46 @@ public class EditPreferencesFragment extends Fragment {
             preferenceCG.addView(newChip);
             num++;
         }
+
+        if(receiveNotification){
+            notificationSwitch.setChecked(true);
+        }else{
+            notificationSwitch.setChecked(false);
+        }
+
+        notificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(receiveNotification){
+                    notificationSwitch.setChecked(false);
+                    receiveNotification = false;
+                }else{
+                    notificationSwitch.setChecked(true);
+                    receiveNotification = true;
+                }
+                updatePreferenceFirestore();
+            }
+        });
     }
 
-    public void updatePrefereceFirestore(){
+    public void updatePreferenceFirestore(){
         usersDoc
-                .update("preferences", categories_Selected)
+                .update("interests", categories_Selected)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("updatePreferences", "DocumentSnapshot successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("updatePreferences", "Error updating document", e);
+                    }
+                });
+
+        usersDoc
+                .update("receiveNotification", receiveNotification)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -198,9 +212,9 @@ public class EditPreferencesFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         categories_Selected.clear();
-                        String b = String.valueOf(document.get("preferences"));
+                        String b = String.valueOf(document.get("interests"));
                         if(b != "null" || b != null || b != "[]"){
-                            ArrayList<String> bkm= (ArrayList<String>) document.get("preferences");
+                            ArrayList<String> bkm= (ArrayList<String>) document.get("interests");
                             for(String testMap : bkm){
                                 String name = testMap;
                                 categories_Selected.add(name);
@@ -208,6 +222,8 @@ public class EditPreferencesFragment extends Fragment {
                         }else{
                             categories_Selected = null;
                         }
+                        boolean noti = document.getBoolean("receiveNotification");
+                        receiveNotification = noti;
 
                         Log.d("getPreferences", "DocumentSnapshot data: " + document.getData());
                     } else {

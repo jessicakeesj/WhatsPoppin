@@ -16,15 +16,8 @@ public class Event implements Serializable {
     private String eventLocationSummary;
     private String eventSource;
 
-    private String eventDate;
-
     public Event(){
 
-    }
-
-    public Event(String eventName, String eventDate) {
-        this.eventName = eventName;
-        this.eventDate = eventDate;
     }
 
     public Event(String eventName, String eventAddress, String eventCategory,
@@ -51,14 +44,6 @@ public class Event implements Serializable {
 
     public void setEventName(String eventName) {
         this.eventName = eventName;
-    }
-
-    public String getEventDate() {
-        return eventDate;
-    }
-
-    public void setEventDate(String eventDate) {
-        this.eventDate = eventDate;
     }
 
     public String getEventAddress() {

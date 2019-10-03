@@ -6,28 +6,20 @@ public class AccountUser {
     private String userId;
     private String userEmail;
     private ArrayList<Event> bookmarks = new ArrayList<Event>();
-    private ArrayList<String> preferences = new ArrayList<String>();
+    private ArrayList<String> interests = new ArrayList<String>();
+    private boolean receiveNotification;
 
     public AccountUser(){
 
     }
 
-    public AccountUser(String userId, String userEmail) {
-        this.userId = userId;
-        this.userEmail = userEmail;
-    }
-
-    public AccountUser(String userId, String userEmail, ArrayList<Event> bookmarks) {
+    public AccountUser(String userId, String userEmail, ArrayList<Event> bookmarks, ArrayList<String> interests,
+                       boolean receiveNotification) {
         this.userId = userId;
         this.userEmail = userEmail;
         this.bookmarks = bookmarks;
-    }
-
-    public AccountUser(String userId, String userEmail, ArrayList<Event> bookmarks, ArrayList<String> preferences) {
-        this.userId = userId;
-        this.userEmail = userEmail;
-        this.bookmarks = bookmarks;
-        this.preferences = preferences;
+        this.interests = interests;
+        this.receiveNotification = receiveNotification;
     }
 
     public String getUserId() {
@@ -54,11 +46,19 @@ public class AccountUser {
         this.bookmarks = bookmarks;
     }
 
-    public ArrayList<String> getPreferences() {
-        return preferences;
+    public ArrayList<String> getInterests() {
+        return interests;
     }
 
-    public void setPreferences(ArrayList<String> preferences) {
-        this.preferences = preferences;
+    public void setInterests(ArrayList<String> interests) {
+        this.interests = interests;
+    }
+
+    public boolean getReceiveNotification() {
+        return receiveNotification;
+    }
+
+    public void setReceiveNotification(boolean receiveNotification) {
+        this.receiveNotification = receiveNotification;
     }
 }
