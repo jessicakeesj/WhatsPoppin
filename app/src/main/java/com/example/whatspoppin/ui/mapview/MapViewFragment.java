@@ -15,9 +15,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
@@ -42,19 +44,30 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
 import androidx.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<Event> eventArrayList = new ArrayList<>();
+    private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
     private ArrayList<MapMarkers> mapMarkers = new ArrayList<>();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GoogleMap mMap;
-    private FirebaseAuth mAuth;
     private DocumentReference usersDoc;
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
 //    private LocationManager locationManager;
 
@@ -69,14 +82,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
-
         getFireStoreData();
-        //realtimeFireStoreData();
+        realtimeFireStoreData();
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
 
@@ -140,8 +153,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    //checks firestore for realtime updates
-/*    public void realtimeFireStoreData() {
+    public void realtimeFireStoreData() {
         usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
@@ -151,18 +163,19 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     return;
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    //Log.d(TAG, "Current data: " + snapshot.getData());
                     getFireStoreData();
                 } else {
-                    //Log.d(TAG, "Current data: null");
                     getFireStoreData();
                 }
             }
         });
-    }*/
+    }
 
     private void getFireStoreData() {
         eventArrayList.clear();
+        mapMarkers.clear();
+        if (mMap != null) mMap.clear();
+        // get list of all events
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -193,21 +206,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                                         .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.placeholder)));
                                 mapMarkers.add(new MapMarkers(event, markerAll, MapMarkers.type.All));
 
-                                // Temporary
-                                Marker markerBookmark = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
-                                        .title(event.getEventName())
-                                        .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.bookmark)));
-                                mapMarkers.add(new MapMarkers(event, markerBookmark, MapMarkers.type.Bookmark));
-                                markerBookmark.setVisible(false);
-
-                                Marker markerReco = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
-                                        .title(event.getEventName())
-                                        .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.best)));
-                                mapMarkers.add(new MapMarkers(event, markerReco, MapMarkers.type.Recommend));
-                                markerReco.setVisible(false);
-
                                 JSONObject obj = new JSONObject();
                                 try {
                                     obj.put("event", event);
@@ -215,16 +213,89 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                                     e.printStackTrace();
                                 }
                                 markerAll.setTag(obj);
-                                markerBookmark.setTag(obj);
-                                markerReco.setTag(obj);
                             }
                         } else {
                             Log.d("saveToEventArrayList", "No such document");
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
+                    getBookmarkRecommendEvent();
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
+                }
+            }
+        });
+    }
+
+    public void getBookmarkRecommendEvent() {
+        // get user bookmarks & preference
+        bookmarkArrayList.clear();
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        ArrayList<String> userBookmarks = new ArrayList<>();
+                        ArrayList<String> userPreferences = new ArrayList<>();
+                        // get bookmarks
+                        String b = String.valueOf(document.get("bookmarks"));
+                        if (b != "null" || b != null || b != "[]") {
+                            ArrayList<HashMap<String, String>> bkm = (ArrayList<HashMap<String, String>>) document.get("bookmarks");
+                            for (HashMap<String, String> testMap : bkm) {
+                                userBookmarks.add(testMap.get("eventName"));
+                            }
+                        }
+                        // get preferences
+                        userPreferences.addAll((ArrayList<String>) document.get("interests"));
+                        for (Event event : eventArrayList) {
+                            String lat = event.getEventLatitude();
+                            String lng = event.getEventLongitude();
+                            if (!(lat == null && lng == null)) {
+
+                                if (userBookmarks.contains(event.getEventName())) {
+                                    bookmarkArrayList.add(event);
+                                    Event newEvent = event;
+                                    Marker markerBookmark = mMap.addMarker(new MarkerOptions()
+                                            .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
+                                            .title(newEvent.getEventName())
+                                            .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.bookmark)));
+                                    mapMarkers.add(new MapMarkers(newEvent, markerBookmark, MapMarkers.type.Bookmark));
+                                    markerBookmark.setVisible(false);
+                                    JSONObject obj = new JSONObject();
+                                    try {
+                                        obj.put("event", event);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    markerBookmark.setTag(obj);
+                                }
+
+                                if (userPreferences.contains(event.getEventCategory())) {
+                                    Event newEvent = event;
+                                    Marker markerReco = mMap.addMarker(new MarkerOptions()
+                                            .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
+                                            .title(newEvent.getEventName())
+                                            .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.best)));
+                                    mapMarkers.add(new MapMarkers(newEvent, markerReco, MapMarkers.type.Recommend));
+                                    markerReco.setVisible(false);
+                                    JSONObject obj = new JSONObject();
+                                    try {
+                                        obj.put("event", event);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    markerReco.setTag(obj);
+                                }
+
+                            }
+                        }
+                        Log.d("getUserDetails", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getUserDetails", "No such document");
+                    }
+                } else {
+                    Log.d("getUserDetails", "get failed with ", task.getException());
                 }
             }
         });
@@ -260,6 +331,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                     Bundle args = new Bundle();
                     args.putSerializable("EVENTLIST", eventArrayList);
+                    args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                     intent.putExtra("BUNDLE", args);
                     intent.putExtra("eventName", event.getEventName());
                     startActivity(intent);

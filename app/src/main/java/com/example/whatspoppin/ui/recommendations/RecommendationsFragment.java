@@ -12,10 +12,12 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
+
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.RecommendAdapter;
@@ -31,14 +33,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RecommendationsFragment extends ListFragment {
-    private ArrayList<Event> rec_eventArrayList = new ArrayList<Event>();
-    private ArrayList<Event> bookmarkArrayList = new ArrayList<Event>();
-    private ArrayList<String> preferenceArrayList = new ArrayList<String>();
+    private ArrayList<Event> rec_eventArrayList = new ArrayList<>();
+    private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
+    private ArrayList<String> preferenceArrayList = new ArrayList<>();
     private RecommendationsViewModel recommendationsViewModel;
     private RecommendAdapter recommendAdapter;
     private ListView eventList;
@@ -158,7 +161,7 @@ public class RecommendationsFragment extends ListFragment {
                             String location_summary = document.getString("location_summary");
                             String source = document.getString("source");
 
-                            if(preferenceArrayList.contains(category)){
+                            if (preferenceArrayList.contains(category)) {
                                 Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                         imageUrl, lng, lat, location_summary, source);
                                 rec_eventArrayList.add(event);
@@ -168,7 +171,7 @@ public class RecommendationsFragment extends ListFragment {
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                    if(getActivity()!=null){
+                    if (getActivity() != null) {
                         recommendAdapter = new RecommendAdapter(getActivity(), rec_eventArrayList);
                         eventList.setAdapter(recommendAdapter);
                         recommendAdapter.notifyDataSetChanged();
@@ -180,7 +183,7 @@ public class RecommendationsFragment extends ListFragment {
         });
     }
 
-    public void getBookmarksFirestore(){
+    public void getBookmarksFirestore() {
         bookmarkArrayList.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -191,9 +194,9 @@ public class RecommendationsFragment extends ListFragment {
                         bookmarkArrayList.clear();
                         String email = document.getString("userEmail");
                         String b = String.valueOf(document.get("bookmarks"));
-                        if(b != "null" || b != null || b != "[]"){
-                            ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
-                            for(HashMap<String,String> testMap : bkm){
+                        if (b != "null" || b != null || b != "[]") {
+                            ArrayList<HashMap<String, String>> bkm = (ArrayList<HashMap<String, String>>) document.get("bookmarks");
+                            for (HashMap<String, String> testMap : bkm) {
                                 String name = testMap.get("eventName");
                                 String address = testMap.get("eventAddress");
                                 String category = testMap.get("eventCategory");
@@ -211,7 +214,7 @@ public class RecommendationsFragment extends ListFragment {
                                         imageUrl, lng, lat, location_summary, source);
                                 bookmarkArrayList.add(event);
                             }
-                        }else{
+                        } else {
                             bookmarkArrayList = null;
                         }
                         Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
@@ -231,8 +234,7 @@ public class RecommendationsFragment extends ListFragment {
         });
     }
 
-    public void getPreferenceFirestore(){
-        preferenceArrayList.clear();
+    public void getPreferenceFirestore() {
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -240,14 +242,14 @@ public class RecommendationsFragment extends ListFragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         preferenceArrayList.clear();
-                        String b = String.valueOf(document.get("preferences"));
-                        if(b != "null" || b != null || b != "[]"){
-                            ArrayList<String> bkm= (ArrayList<String>) document.get("preferences");
-                            for(String testMap : bkm){
+                        String b = String.valueOf(document.get("interests"));
+                        if (b != "null" || b != null || b != "[]") {
+                            ArrayList<String> bkm = (ArrayList<String>) document.get("interests");
+                            for (String testMap : bkm) {
                                 String name = testMap;
                                 preferenceArrayList.add(name);
                             }
-                        }else{
+                        } else {
                             preferenceArrayList = null;
                         }
                         Log.d("getPreferences", "DocumentSnapshot data: " + document.getData());
