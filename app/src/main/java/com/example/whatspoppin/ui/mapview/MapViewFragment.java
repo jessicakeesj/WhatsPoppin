@@ -1,23 +1,13 @@
 package com.example.whatspoppin.ui.mapview;
 
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.whatspoppin.Event;
@@ -28,7 +18,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -50,14 +39,8 @@ import androidx.annotation.NonNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<Event> eventArrayList = new ArrayList<>();
@@ -88,7 +71,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
-        getFireStoreData();
+        getFireStoreEvents();
         realtimeFireStoreData();
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
@@ -102,19 +85,17 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 .findFragmentById(R.id.map_fragment);  //use SuppoprtMapFragment for using in fragment instead of activity  MapFragment = activity   SupportMapFragment = fragment
         mapFragment.getMapAsync(this);
 
+        // show all
         rootView.findViewById(R.id.fab_all).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 for (MapMarkers mm : mapMarkers) {
-                    if (mm.getEventType() == MapMarkers.type.All) {
-                        mm.getmMarker().setVisible(true);
-                    } else {
-                        mm.getmMarker().setVisible(false);
-                    }
+                    mm.getmMarker().setVisible(true);
                 }
             }
         });
 
+        // show recommended event markers, hide the rest
         rootView.findViewById(R.id.fab_recommended).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -128,6 +109,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
+        // show bookmark markers, hide the rest
         rootView.findViewById(R.id.fab_bookmarks).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -144,15 +126,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return rootView;
     }
 
-    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
-        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
-        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        vectorDrawable.draw(canvas);
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
-    }
-
     public void realtimeFireStoreData() {
         usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -163,18 +136,18 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     return;
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    getFireStoreData();
+                    Log.d("SNAPSHOT", snapshot.toString());
+                    getFireStoreEvents();
                 } else {
-                    getFireStoreData();
+                    getFireStoreEvents();
                 }
             }
         });
     }
 
-    private void getFireStoreData() {
+    private void getFireStoreEvents() {
         eventArrayList.clear();
-        mapMarkers.clear();
-        if (mMap != null) mMap.clear();
+
         // get list of all events
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -195,31 +168,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                             String location_summary = document.getString("location_summary");
                             String source = document.getString("source");
 
-                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                                    imageUrl, lng, lat, location_summary, source);
+                            Event event = new Event(name, address, category, description, datetime_start,
+                                    datetime_end, url, imageUrl, lng, lat, location_summary, source);
                             eventArrayList.add(event);
-
-                            if (!(lat == null && lng == null)) {
-                                Marker markerAll = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
-                                        .title(event.getEventName())
-                                        .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.placeholder)));
-                                mapMarkers.add(new MapMarkers(event, markerAll, MapMarkers.type.All));
-
-                                JSONObject obj = new JSONObject();
-                                try {
-                                    obj.put("event", event);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                markerAll.setTag(obj);
-                            }
                         } else {
                             Log.d("saveToEventArrayList", "No such document");
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                    getBookmarkRecommendEvent();
+                    createEventsMapMarkers();
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
                 }
@@ -227,9 +184,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    public void getBookmarkRecommendEvent() {
-        // get user bookmarks & preference
+    public void createEventsMapMarkers() { // get user bookmarks & preference
         bookmarkArrayList.clear();
+        mapMarkers.clear();
+        if (mMap != null) mMap.clear();
+
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -238,7 +197,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     if (document.exists()) {
                         ArrayList<String> userBookmarks = new ArrayList<>();
                         ArrayList<String> userPreferences = new ArrayList<>();
-                        // get bookmarks
+
+                        // get bookmarks list
                         String b = String.valueOf(document.get("bookmarks"));
                         if (b != "null" || b != null || b != "[]") {
                             ArrayList<HashMap<String, String>> bkm = (ArrayList<HashMap<String, String>>) document.get("bookmarks");
@@ -246,48 +206,41 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                                 userBookmarks.add(testMap.get("eventName"));
                             }
                         }
-                        // get preferences
+                        // get preferences list
                         userPreferences.addAll((ArrayList<String>) document.get("interests"));
+
+                        // add markers
                         for (Event event : eventArrayList) {
                             String lat = event.getEventLatitude();
                             String lng = event.getEventLongitude();
                             if (!(lat == null && lng == null)) {
 
-                                if (userBookmarks.contains(event.getEventName())) {
+                                int markerDrawable = R.drawable.mm_normal;
+                                MapMarkers.type markerType = MapMarkers.type.All;
+
+                                if (userBookmarks.contains(event.getEventName())) { // bookmarked event markers
                                     bookmarkArrayList.add(event);
-                                    Event newEvent = event;
-                                    Marker markerBookmark = mMap.addMarker(new MarkerOptions()
-                                            .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
-                                            .title(newEvent.getEventName())
-                                            .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.bookmark)));
-                                    mapMarkers.add(new MapMarkers(newEvent, markerBookmark, MapMarkers.type.Bookmark));
-                                    markerBookmark.setVisible(false);
-                                    JSONObject obj = new JSONObject();
-                                    try {
-                                        obj.put("event", event);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    markerBookmark.setTag(obj);
+                                    markerDrawable = R.drawable.mm_bookmark;
+                                    markerType = MapMarkers.type.Bookmark;
+                                } else if (userPreferences.contains(event.getEventCategory())) { // recommended event markers
+                                    markerDrawable = R.drawable.mm_recommended;
+                                    markerType = MapMarkers.type.Recommend;
                                 }
 
-                                if (userPreferences.contains(event.getEventCategory())) {
-                                    Event newEvent = event;
-                                    Marker markerReco = mMap.addMarker(new MarkerOptions()
-                                            .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
-                                            .title(newEvent.getEventName())
-                                            .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.best)));
-                                    mapMarkers.add(new MapMarkers(newEvent, markerReco, MapMarkers.type.Recommend));
-                                    markerReco.setVisible(false);
-                                    JSONObject obj = new JSONObject();
-                                    try {
-                                        obj.put("event", event);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    markerReco.setTag(obj);
-                                }
+                                Marker mapMarker = mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
+                                        .title(event.getEventName())
+                                        .icon(BitmapDescriptorFactory.fromResource(markerDrawable)));
+                                mapMarkers.add(new MapMarkers(event, mapMarker, markerType));
+                                mapMarker.setVisible(true);
 
+                                JSONObject obj = new JSONObject();
+                                try {
+                                    obj.put("event", event);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                mapMarker.setTag(obj);
                             }
                         }
                         Log.d("getUserDetails", "DocumentSnapshot data: " + document.getData());
@@ -299,10 +252,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
-    }
-
-    public void displayToast(String msg) {
-        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -320,20 +269,19 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mUiSettings.setRotateGesturesEnabled(false);
 
         LatLng position = new LatLng(1.3521, 103.8198);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 12));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 17));
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
                 JSONObject obj = (JSONObject) marker.getTag();
                 try {
-                    Event event = (Event) obj.get("event");
                     Intent intent = new Intent(getContext(), EventDetailsFragment.class);
+                    Event event = (Event) obj.get("event");
                     Bundle args = new Bundle();
-                    args.putSerializable("EVENTLIST", eventArrayList);
+                    args.putSerializable("EVENT", event);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                     intent.putExtra("BUNDLE", args);
-                    intent.putExtra("eventName", event.getEventName());
                     startActivity(intent);
                 } catch (JSONException e) {
                     e.printStackTrace();
