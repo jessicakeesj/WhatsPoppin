@@ -71,6 +71,7 @@ public class SignIn extends AppCompatActivity {
 
                             Intent intent = new Intent(SignIn.this, NavDrawer.class);
                             startActivity(intent);
+                            finish(); //to stop it from rerunning
                         }
                         else {
                             Toast.makeText(getApplicationContext(), "Login failed! Please try again later", Toast.LENGTH_LONG).show();

@@ -14,20 +14,25 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class EventDetailsFragment extends AppCompatActivity {
 
@@ -57,9 +62,10 @@ public class EventDetailsFragment extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("BUNDLE");
-        eventArrayList = (ArrayList<Event>) args.getSerializable("EVENTLIST");
+        event = (Event) args.getSerializable("EVENT");
+        //eventArrayList = (ArrayList<Event>) args.getSerializable("EVENTLIST");
         bookmarkList = (ArrayList<Event>) args.getSerializable("BOOKMARKLIST");
-        eventName = intent.getExtras().getString("eventName");
+        //eventName = intent.getExtras().getString("eventName");
 
         eventNameTV = findViewById(R.id.details_eventName);
         eventSummaryTV = findViewById(R.id.details_eventSummary);
@@ -69,21 +75,26 @@ public class EventDetailsFragment extends AppCompatActivity {
         linkBtn = findViewById(R.id.details_eventLink);
         bookmarkImg = (ImageView) findViewById(R.id.details_bookmark);
 
-        for (Event e : eventArrayList) {
+/*        for (Event e : eventArrayList) {
             if (e.getEventName().trim().equals(eventName.trim())) {
                 event = e;
                 break;
             }
-        }
+        }*/
 
         URL url = null;
         try {
-            Picasso.get().load("https://www." + event.getEventImageUrl()).into(eventImage);
+            if(event.getEventImageUrl().contains("http")){
+                Picasso.get().load(event.getEventImageUrl()).into(eventImage);
+            }else{
+                Picasso.get().load("https://www." + event.getEventImageUrl()).into(eventImage);
+            }
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        eventNameTV.setText(eventName);
+        eventNameTV.setText(event.getEventName().trim());
         String startDate = formatDate(event.getEvent_datetime_start());
         String endDate = formatDate(event.getEvent_datetime_end());
 
@@ -204,7 +215,7 @@ public class EventDetailsFragment extends AppCompatActivity {
         return dateString;
     }
 
-/*    public void getBookmarksFirestore_(){
+    public void getBookmarksFirestore_(){
         bookmarkList.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -283,5 +294,5 @@ public class EventDetailsFragment extends AppCompatActivity {
                 }
             }
         });
-    }*/
+    }
 }

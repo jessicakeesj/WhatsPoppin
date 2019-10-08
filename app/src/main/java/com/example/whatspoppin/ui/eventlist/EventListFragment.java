@@ -83,13 +83,26 @@ public class EventListFragment extends ListFragment {
                 String[] eventName = tv.getText().toString().split("\n");
                 //Toast.makeText(getActivity().getApplicationContext(), eventName[0], Toast.LENGTH_SHORT).show();
 
+                Event event = new Event();
+                for (Event e : eventArrayList) {
+                    if (e.getEventName().trim().equals(eventName[0].trim())) {
+                        event = e;
+                        break;
+                    }
+                }
+
                 Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                 Bundle args = new Bundle();
-                args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
-                args.putSerializable("BOOKMARKLIST", (Serializable) bookmarkArrayList);
+                args.putSerializable("EVENT", event);
+                //args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
+                args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                 intent.putExtra("BUNDLE", args);
-                intent.putExtra("eventName", eventName[0].trim());
-                startActivity(intent);
+                //intent.putExtra("eventName", eventName[0].trim());
+                try{
+                    startActivity(intent);
+                }catch(Exception e ){
+                    Log.e("START ACTIVITY", e.getMessage());
+                }
             }
         });
 
@@ -139,9 +152,11 @@ public class EventListFragment extends ListFragment {
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                int i = 0;
                 if (task.isSuccessful()) {
                     eventArrayList.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
+
                         if (document != null) {
                             String name = document.getId();
                             String address = document.getString("address");
