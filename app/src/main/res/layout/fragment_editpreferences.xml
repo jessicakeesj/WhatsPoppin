@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="8dp">
 
     <TextView
         android:id="@+id/text_editpreferences"
@@ -17,44 +17,22 @@
         android:id="@+id/preference_chipgroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp">
+        android:layout_margin="10dp"></com.google.android.material.chip.ChipGroup>
 
-<!--        <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Attraction" />-->
-
-    </com.google.android.material.chip.ChipGroup>
-
-    <TextView
-        android:id="@+id/text_preferredlocation"
+    <Switch
+        android:id="@+id/location_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/editPreferences_location"
-        android:textSize="25sp" />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/text_preferredlocation"
-        android:hint="events location"
-        android:layout_marginBottom="50dp"
-        android:inputType="textPostalAddress"/>
-
-<!--    <fragment android:id="@+id/autocomplete_fragment"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"-->
-<!--        />-->
+        android:textSize="20sp" />
 
     <Switch
         android:id="@+id/notification_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:textSize="20sp"
-        android:text="@string/editPreferences_notification" />
+        android:text="@string/editPreferences_notification"
+        android:textSize="20sp" />
 
 </LinearLayout>

@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+
 import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -29,16 +30,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 
 public class EditPreferencesFragment extends Fragment {
 
     private EditPreferencesViewModel editPreferencesViewModel;
-    private ArrayList<String> eventCategories = new ArrayList<String>();
-    private ArrayList<String> categories_Selected = new ArrayList<String>();
+    private ArrayList<String> eventCategories = new ArrayList<>();
+    private ArrayList<String> categories_Selected = new ArrayList<>();
     private ChipGroup preferenceCG;
-    private boolean receiveNotification;
-    private Switch notificationSwitch;
+    private boolean receiveNotification = false;
+    private boolean showNearbyEvents = false;
+    private Switch notificationSwitch, locationSwitch;
     //firebase
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
@@ -54,7 +57,6 @@ public class EditPreferencesFragment extends Fragment {
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
-
         return root;
     }
 
@@ -62,11 +64,11 @@ public class EditPreferencesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         //super.onViewCreated(view, savedInstanceState);
 
-        getFireStoreData();
-        //getPreferenceFirestore();
+        getEventCategories();
         //realtimeFireStoreData();
         preferenceCG = view.findViewById(R.id.preference_chipgroup);
         notificationSwitch = view.findViewById(R.id.notification_switch);
+        locationSwitch = view.findViewById(R.id.location_switch);
     }
 
     //checks firestore for realtime updates
@@ -80,17 +82,17 @@ public class EditPreferencesFragment extends Fragment {
                     return;
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    getFireStoreData();
+                    getEventCategories();
                     getPreferenceFirestore();
                 } else {
-                    getFireStoreData();
+                    getEventCategories();
                     getPreferenceFirestore();
                 }
             }
         });
     }
 
-    public void getFireStoreData() {
+    public void getEventCategories() {
         eventCategories.clear();
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -100,7 +102,7 @@ public class EditPreferencesFragment extends Fragment {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         if (document != null) {
                             String category = document.getString("category");
-                            if(!eventCategories.contains(category)){
+                            if (!eventCategories.contains(category)) {
                                 eventCategories.add(category);
                             }
                         } else {
@@ -116,11 +118,12 @@ public class EditPreferencesFragment extends Fragment {
         });
     }
 
-    public void setupview(){
-        preferenceCG.setChipSpacing(20);
+    public void setupView() {
 
+        // category chips
+        preferenceCG.setChipSpacing(20);
         int num = 0;
-        for(String s : eventCategories){
+        for (String s : eventCategories) {
             final Chip newChip = new Chip(getContext());
             newChip.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -128,52 +131,60 @@ public class EditPreferencesFragment extends Fragment {
                     0, R.style.Widget_MaterialComponents_Chip_Filter));
             newChip.setText(s);
             newChip.setId(num);
-
-            if(categories_Selected.contains(s)){
-                newChip.setChecked(true);
-            }
-
+            if (categories_Selected.contains(s)) newChip.setChecked(true);
             newChip.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(!categories_Selected.contains(newChip.getText().toString())){
+                    if (!categories_Selected.contains(newChip.getText().toString())) {
                         categories_Selected.add(newChip.getText().toString());
-                    }else{
+                    } else {
                         categories_Selected.remove(newChip.getText().toString());
                     }
                     updatePreferenceFirestore();
                     //Toast.makeText(getActivity(), "Chip is "+ newChip.getText().toString(), Toast.LENGTH_SHORT).show();
                 }
             });
-
             preferenceCG.addView(newChip);
             num++;
         }
 
-        if(receiveNotification){
-            notificationSwitch.setChecked(true);
-        }else{
-            notificationSwitch.setChecked(false);
-        }
-
+        // notification toggle
+        if (receiveNotification) notificationSwitch.setChecked(true);
+        else notificationSwitch.setChecked(false);
         notificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(receiveNotification){
+                if (receiveNotification) {
                     notificationSwitch.setChecked(false);
                     receiveNotification = false;
-                }else{
+                } else {
                     notificationSwitch.setChecked(true);
                     receiveNotification = true;
                 }
                 updatePreferenceFirestore();
             }
         });
+
+        // location toggle
+        if (showNearbyEvents) locationSwitch.setChecked(true);
+        else locationSwitch.setChecked(false);
+        locationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (showNearbyEvents) {
+                    locationSwitch.setChecked(false);
+                    showNearbyEvents = false;
+                } else {
+                    locationSwitch.setChecked(true);
+                    showNearbyEvents = true;
+                }
+                updatePreferenceFirestore();
+            }
+        });
     }
 
-    public void updatePreferenceFirestore(){
-        usersDoc
-                .update("interests", categories_Selected)
+    public void updatePreferenceFirestore() {
+        usersDoc.update("interests", categories_Selected)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -187,8 +198,21 @@ public class EditPreferencesFragment extends Fragment {
                     }
                 });
 
-        usersDoc
-                .update("receiveNotification", receiveNotification)
+        usersDoc.update("receiveNotification", receiveNotification)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("updatePreferences", "DocumentSnapshot successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("updatePreferences", "Error updating document", e);
+                    }
+                });
+
+        usersDoc.update("showNearbyEvents", showNearbyEvents)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -203,7 +227,7 @@ public class EditPreferencesFragment extends Fragment {
                 });
     }
 
-    public void getPreferenceFirestore(){
+    public void getPreferenceFirestore() {
         categories_Selected.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -213,23 +237,22 @@ public class EditPreferencesFragment extends Fragment {
                     if (document.exists()) {
                         categories_Selected.clear();
                         String b = String.valueOf(document.get("interests"));
-                        if(b != "null" || b != null || b != "[]"){
-                            ArrayList<String> bkm= (ArrayList<String>) document.get("interests");
-                            for(String testMap : bkm){
+                        if (b != "null" || b != null || b != "[]") {
+                            ArrayList<String> bkm = (ArrayList<String>) document.get("interests");
+                            for (String testMap : bkm) {
                                 String name = testMap;
                                 categories_Selected.add(name);
                             }
-                        }else{
-                            categories_Selected = null;
-                        }
-                        boolean noti = document.getBoolean("receiveNotification");
-                        receiveNotification = noti;
+                        } else categories_Selected = null;
+                        receiveNotification = document.getBoolean("receiveNotification");
+                        ;
+                        showNearbyEvents = document.getBoolean("showNearbyEvents");
 
                         Log.d("getPreferences", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getPreferences", "No such document");
                     }
-                    setupview();
+                    setupView();
                 } else {
                     Log.d("getPreferences", "get failed with ", task.getException());
                 }
