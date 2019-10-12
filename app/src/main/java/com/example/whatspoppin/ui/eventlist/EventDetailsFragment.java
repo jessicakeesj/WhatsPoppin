@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
+import com.example.whatspoppin.SignIn;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -52,6 +54,7 @@ public class EventDetailsFragment extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_eventdetails);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
@@ -74,13 +77,6 @@ public class EventDetailsFragment extends AppCompatActivity {
         eventSource = findViewById(R.id.details_eventSource);
         linkBtn = findViewById(R.id.details_eventLink);
         bookmarkImg = (ImageView) findViewById(R.id.details_bookmark);
-
-/*        for (Event e : eventArrayList) {
-            if (e.getEventName().trim().equals(eventName.trim())) {
-                event = e;
-                break;
-            }
-        }*/
 
         URL url = null;
         try {
@@ -151,6 +147,24 @@ public class EventDetailsFragment extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // handle arrow click here
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // close this activity and return to preview activity (if there is any)
+        } else if (item.getItemId() == R.id.logout){
+            FirebaseAuth.getInstance().signOut();
+
+            // Launching the login activity
+            Intent intent = new Intent(getApplication(), SignIn.class);
+            startActivity(intent);
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
     public void updateBookmarksFirestore(){
         usersDoc

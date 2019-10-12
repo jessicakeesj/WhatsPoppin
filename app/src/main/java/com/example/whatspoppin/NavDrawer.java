@@ -1,5 +1,6 @@
 package com.example.whatspoppin;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 public class NavDrawer extends AppCompatActivity {
@@ -99,6 +101,20 @@ public class NavDrawer extends AppCompatActivity {
         if (currentUser != null)
             emailTextView.setText(currentUser.getEmail());
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // handle arrow click here
+        if (item.getItemId() == R.id.logout){
+            FirebaseAuth.getInstance().signOut();
+
+            // Launching the login activity
+            Intent intent = new Intent(getApplication(), SignIn.class);
+            startActivity(intent);
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
