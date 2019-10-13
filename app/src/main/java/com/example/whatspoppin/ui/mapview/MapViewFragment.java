@@ -1,5 +1,6 @@
 package com.example.whatspoppin.ui.mapview;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,11 +34,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 import androidx.annotation.NonNull;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,17 +47,23 @@ import java.util.HashMap;
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<Event> eventArrayList = new ArrayList<>();
     private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
-    private ArrayList<MapMarkers> mapMarkers = new ArrayList<>();
+    private ArrayList<MapCluster> clusterMarkers = new ArrayList<>();
+    private ArrayList<MapCluster> clusterBookmarkMarkers = new ArrayList<>();
+    private ArrayList<MapCluster> clusterRecommendedMarkers = new ArrayList<>();
+    private ArrayList<String> userBookmarks = new ArrayList<>();
+    private ArrayList<String> userPreferences = new ArrayList<>();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GoogleMap mMap;
     private DocumentReference usersDoc;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
+    private ClusterManager<MapCluster> mClusterManager;
 
 //    private LocationManager locationManager;
 
     public MapViewFragment() { // Required empty public constructor
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,7 +80,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
         getFireStoreEvents();
-        realtimeFireStoreData();
+//        realtimeFireStoreData();
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
 
@@ -89,9 +97,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         rootView.findViewById(R.id.fab_all).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for (MapMarkers mm : mapMarkers) {
-                    mm.getmMarker().setVisible(true);
-                }
+                mClusterManager.clearItems();
+                mClusterManager.addItems(new ArrayList<>(clusterMarkers));
+                mClusterManager.cluster();
             }
         });
 
@@ -99,13 +107,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         rootView.findViewById(R.id.fab_recommended).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for (MapMarkers mm : mapMarkers) {
-                    if (mm.getEventType() == MapMarkers.type.Recommend) {
-                        mm.getmMarker().setVisible(true);
-                    } else {
-                        mm.getmMarker().setVisible(false);
-                    }
-                }
+                mClusterManager.clearItems();
+                mClusterManager.addItems(new ArrayList<>(clusterRecommendedMarkers));
+                mClusterManager.cluster();
             }
         });
 
@@ -113,13 +117,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         rootView.findViewById(R.id.fab_bookmarks).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for (MapMarkers mm : mapMarkers) {
-                    if (mm.getEventType() == MapMarkers.type.Bookmark) {
-                        mm.getmMarker().setVisible(true);
-                    } else {
-                        mm.getmMarker().setVisible(false);
-                    }
-                }
+                mClusterManager.clearItems();
+                mClusterManager.addItems(new ArrayList<>(clusterBookmarkMarkers));
+                mClusterManager.cluster();
             }
         });
 
@@ -158,7 +158,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                             String name = document.getId();
                             String address = document.getString("address");
                             String category = document.getString("category");
-                            String description = document.getString("description");
+                            String description = document.getString("description") == null ? "" : document.getString("description");
                             String datetime_start = document.getString("datetime_start");
                             String datetime_end = document.getString("datetime_end");
                             String url = document.getString("url");
@@ -176,7 +176,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                    createEventsMapMarkers();
+                    getFireStoreUser();
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
                 }
@@ -184,9 +184,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    public void createEventsMapMarkers() { // get user bookmarks & preference
-        bookmarkArrayList.clear();
-        mapMarkers.clear();
+    public void getFireStoreUser() { // get user bookmarks & preference
+        userBookmarks.clear();
+        userPreferences.clear();
         if (mMap != null) mMap.clear();
 
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -195,8 +195,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                        ArrayList<String> userBookmarks = new ArrayList<>();
-                        ArrayList<String> userPreferences = new ArrayList<>();
+                        userBookmarks = new ArrayList<>();
+                        userPreferences = new ArrayList<>();
 
                         // get bookmarks list
                         String b = String.valueOf(document.get("bookmarks"));
@@ -210,39 +210,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         userPreferences.addAll((ArrayList<String>) document.get("interests"));
 
                         // add markers
-                        for (Event event : eventArrayList) {
-                            String lat = event.getEventLatitude();
-                            String lng = event.getEventLongitude();
-                            if (!(lat == null && lng == null)) {
+                        createEventsMapMarkers();
 
-                                int markerDrawable = R.drawable.mm_normal;
-                                MapMarkers.type markerType = MapMarkers.type.All;
-
-                                if (userBookmarks.contains(event.getEventName())) { // bookmarked event markers
-                                    bookmarkArrayList.add(event);
-                                    markerDrawable = R.drawable.mm_bookmark;
-                                    markerType = MapMarkers.type.Bookmark;
-                                } else if (userPreferences.contains(event.getEventCategory())) { // recommended event markers
-                                    markerDrawable = R.drawable.mm_recommended;
-                                    markerType = MapMarkers.type.Recommend;
-                                }
-
-                                Marker mapMarker = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))
-                                        .title(event.getEventName())
-                                        .icon(BitmapDescriptorFactory.fromResource(markerDrawable)));
-                                mapMarkers.add(new MapMarkers(event, mapMarker, markerType));
-                                mapMarker.setVisible(true);
-
-                                JSONObject obj = new JSONObject();
-                                try {
-                                    obj.put("event", event);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                mapMarker.setTag(obj);
-                            }
-                        }
                         Log.d("getUserDetails", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getUserDetails", "No such document");
@@ -254,12 +223,57 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
+    private void createEventsMapMarkers() {
+        // clear lists
+        bookmarkArrayList.clear();
+        clusterRecommendedMarkers.clear();
+        clusterBookmarkMarkers.clear();
+        clusterMarkers.clear();
+
+        // add markers
+        for (Event event : eventArrayList) {
+            String lat = event.getEventLatitude();
+            String lng = event.getEventLongitude();
+            if (!(lat == null && lng == null)) {
+                String name = event.getEventName();
+                String desc = event.getEventDescription();
+                if (desc.length() > 50 && desc.length() >= name.length()) { // show some description only
+                    desc = desc.substring(0, name.length()) + "...";
+                }
+
+                MapCluster.EventType markerType = MapCluster.EventType.All;
+                if (userBookmarks.contains(name)) { // bookmarked event markers
+                    bookmarkArrayList.add(event);
+                    markerType = MapCluster.EventType.Bookmark;
+                } else if (userPreferences.contains(event.getEventCategory())) { // recommended event markers
+                    markerType = MapCluster.EventType.Recommend;
+                }
+                MapCluster mm = new MapCluster(name, Double.parseDouble(lat), Double.parseDouble(lng),
+                        desc, event, markerType);
+
+                // add an instance of the marker to list
+                MapCluster mc = mm;
+                if (markerType == MapCluster.EventType.Bookmark) {
+                    clusterBookmarkMarkers.add(mc);
+                } else if (markerType == MapCluster.EventType.Recommend) {
+                    clusterRecommendedMarkers.add(mc);
+                }
+                clusterMarkers.add(mc);
+
+                // add marker to cluster
+                mClusterManager.addItem(mm);
+            }
+        }
+        mClusterManager.cluster();
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         mMap.clear(); //clear old markers
+        setUpClusterer(mMap);
 
         // Map Ui Settings
         UiSettings mUiSettings = mMap.getUiSettings();
@@ -268,51 +282,71 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mUiSettings.setMyLocationButtonEnabled(true);
         mUiSettings.setRotateGesturesEnabled(false);
 
+        // Default position
         LatLng position = new LatLng(1.3521, 103.8198);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 17));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 21));
 
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+        mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<MapCluster>() {
             @Override
-            public void onInfoWindowClick(Marker marker) {
-                JSONObject obj = (JSONObject) marker.getTag();
-                try {
-                    Intent intent = new Intent(getContext(), EventDetailsFragment.class);
-                    Event event = (Event) obj.get("event");
-                    Bundle args = new Bundle();
-                    args.putSerializable("EVENT", event);
-                    args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
-                    intent.putExtra("BUNDLE", args);
-                    startActivity(intent);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            public boolean onClusterClick(Cluster<MapCluster> cluster) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(cluster.getPosition(), 17));
+                return true;
+            }
+        });
+
+        mMap.setOnInfoWindowClickListener(mClusterManager);
+        // Trigger when marker in cluster is clicked
+        mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<MapCluster>() {
+            @Override
+            public void onClusterItemInfoWindowClick(MapCluster mapCluster) {
+                Intent intent = new Intent(getContext(), EventDetailsFragment.class);
+                Bundle args = new Bundle();
+                args.putSerializable("EVENT", mapCluster.getEvent());
+                args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
+                intent.putExtra("BUNDLE", args);
+                startActivity(intent);
             }
         });
     }
-}
 
-class MapMarkers {
-    private Marker mMarker;
-    private Event event;
-    private type eventType;
 
-    public MapMarkers(Event event, Marker marker, type t) {
-        this.event = event;
-        this.mMarker = marker;
-        this.eventType = t;
+    private void setUpClusterer(GoogleMap mMap) {
+        mClusterManager.clearItems();
+        mClusterManager = new ClusterManager<MapCluster>(getContext(), mMap);
+        mClusterManager.setAlgorithm(new GridBasedAlgorithm<MapCluster>());
+        MapClusterRenderer clusterRenderer = new MapClusterRenderer(getContext(), mMap, mClusterManager);
+        mClusterManager.setRenderer(clusterRenderer);
+
+        // Point the map's listeners at the listeners implemented by the cluster manager.
+        mMap.setOnCameraIdleListener(mClusterManager);
+        mMap.setOnMarkerClickListener(mClusterManager);
     }
 
-    public Marker getmMarker() {
-        return this.mMarker;
-    }
 
-    public Event getEvent() {
-        return this.event;
-    }
+    private class MapClusterRenderer extends DefaultClusterRenderer<MapCluster> implements GoogleMap.OnCameraIdleListener {
+        private final Context mContext;
+        private float currentZoomLevel;
 
-    public type getEventType() {
-        return this.eventType;
-    }
+        public MapClusterRenderer(Context context, GoogleMap map, ClusterManager<MapCluster> clusterManager) {
+            super(context, map, clusterManager);
+            mContext = context;
+        }
 
-    enum type {All, Bookmark, Recommend}
+        @Override
+        protected void onBeforeClusterItemRendered(MapCluster mc, MarkerOptions markerOptions) {
+            // set the map marker icon
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(mc.getMarkerDrawable()));
+        }
+
+        @Override
+        protected boolean shouldRenderAsCluster(final Cluster<MapCluster> cluster) {
+            return super.shouldRenderAsCluster(cluster) && currentZoomLevel < 16;
+        }
+
+        @Override
+        public void onCameraIdle() {
+            currentZoomLevel = mMap.getCameraPosition().zoom;
+        }
+    }
 }
