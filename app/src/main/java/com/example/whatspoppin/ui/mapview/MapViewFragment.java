@@ -52,18 +52,20 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<MapCluster> clusterRecommendedMarkers = new ArrayList<>();
     private ArrayList<String> userBookmarks = new ArrayList<>();
     private ArrayList<String> userPreferences = new ArrayList<>();
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GoogleMap mMap;
     private DocumentReference usersDoc;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private ClusterManager<MapCluster> mClusterManager;
+    private double userLat = 1.3521;
+    private double userLng = 103.8198;
 
 //    private LocationManager locationManager;
 
     public MapViewFragment() { // Required empty public constructor
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -264,6 +266,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 mClusterManager.addItem(mm);
             }
         }
+        // User location marker
+        mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(userLat, userLng))
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mm_position)));
         mClusterManager.cluster();
     }
 
@@ -283,7 +289,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mUiSettings.setRotateGesturesEnabled(false);
 
         // Default position
-        LatLng position = new LatLng(1.3521, 103.8198);
+        LatLng position = new LatLng(userLat, userLng);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 21));
 
 
@@ -312,7 +318,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
 
     private void setUpClusterer(GoogleMap mMap) {
-        mClusterManager.clearItems();
         mClusterManager = new ClusterManager<MapCluster>(getContext(), mMap);
         mClusterManager.setAlgorithm(new GridBasedAlgorithm<MapCluster>());
         MapClusterRenderer clusterRenderer = new MapClusterRenderer(getContext(), mMap, mClusterManager);
