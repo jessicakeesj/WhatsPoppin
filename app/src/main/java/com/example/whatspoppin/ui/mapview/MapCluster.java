@@ -1,7 +1,5 @@
 package com.example.whatspoppin.ui.mapview;
 
-import android.graphics.drawable.Drawable;
-
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.google.android.gms.maps.model.LatLng;
@@ -14,11 +12,8 @@ public class MapCluster implements ClusterItem {
     private Event event;
     private EventType eventType;
     private int markerDrawable;
-    enum EventType {All, Bookmark, Recommend}
 
-    public MapCluster(double lat, double lng) {
-        mPosition = new LatLng(lat, lng);
-    }
+    enum EventType {All, Bookmark, Recommend}
 
     public MapCluster(String title, double lat, double lng, String snippet, Event e, EventType et) {
         mPosition = new LatLng(lat, lng);
@@ -49,7 +44,6 @@ public class MapCluster implements ClusterItem {
     public String getSnippet() {
         return mSnippet;
     }
-
 
     public Event getEvent() {
         return event;

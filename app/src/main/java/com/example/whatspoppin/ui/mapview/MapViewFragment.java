@@ -1,19 +1,32 @@
 package com.example.whatspoppin.ui.mapview;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,7 +58,10 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MapViewFragment extends Fragment implements OnMapReadyCallback {
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
+public class MapViewFragment extends Fragment implements OnMapReadyCallback, LocationListener {
     private ArrayList<Event> eventArrayList = new ArrayList<>();
     private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
     private ArrayList<MapCluster> clusterMarkers = new ArrayList<>();
@@ -62,7 +79,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private double userLat = 1.3521;
     private double userLng = 103.8198;
 
-//    private LocationManager locationManager;
+    private Marker userMarker;
+    private FusedLocationProviderClient client;
+    private float currentZoomLevel;
+    private LocationManager locationManager;
 
     public MapViewFragment() { // Required empty public constructor
     }
@@ -70,6 +90,16 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{ACCESS_FINE_LOCATION}, 1);
+            return;
+        } else {
+            requestLocation();
+        }
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
     }
 
     @Override
@@ -85,11 +115,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 //        realtimeFireStoreData();
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
-
-//        locationManager = (LocationManager) getSystemService(Service.LOCATION_SERVICE);
-//        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//        double longitude = location.getLongitude();
-//        double latitude = location.getLatitude();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map_fragment);  //use SuppoprtMapFragment for using in fragment instead of activity  MapFragment = activity   SupportMapFragment = fragment
@@ -126,6 +151,56 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         });
 
         return rootView;
+    }
+
+    private void requestLocation() {
+
+        if (ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(),
+                        ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(locationManager.NETWORK_PROVIDER);
+        client = LocationServices.getFusedLocationProviderClient(getContext());
+        client.requestLocationUpdates(new LocationRequest(), new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Location currentLocation = locationResult.getLastLocation();
+                userLat = currentLocation.getLatitude();
+                userLng = currentLocation.getLatitude();
+                LatLng position = new LatLng(userLng, userLat);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, currentZoomLevel));
+                if (userMarker == null) {
+                    userMarker = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(userLat, userLng))
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.mm_position)));
+                } else
+                    userMarker.setPosition(position);
+            }
+        }, Looper.myLooper());
+//        onLocationChanged(location);
+//
+//        // check if GPS enabled
+//        if (ActivityCompat.checkSelfPermission(getContext(),
+//                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+//                ActivityCompat.checkSelfPermission(getContext(),
+//                        ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+//                @Override
+//                public void onSuccess(Location location) {
+//                    if (location != null && userMarker != null && mMap != null) {
+//                        displayToast("hi");
+//                        userLat = location.getLatitude();
+//                        userLng = location.getLatitude();
+//                        LatLng position = new LatLng(userLng, userLat);
+//                        userMarker.setPosition(position);
+//                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, currentZoomLevel));
+//                    }
+//                }
+//            });
+//        }
     }
 
     public void realtimeFireStoreData() {
@@ -267,7 +342,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             }
         }
         // User location marker
-        mMap.addMarker(new MarkerOptions()
+        userMarker = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(userLat, userLng))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.mm_position)));
         mClusterManager.cluster();
@@ -289,8 +364,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mUiSettings.setRotateGesturesEnabled(false);
 
         // Default position
-        LatLng position = new LatLng(userLat, userLng);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 21));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(userLat, userLng), 21));
 
 
         mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<MapCluster>() {
@@ -328,10 +402,37 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(mClusterManager);
     }
 
+    public void displayToast(String msg) {
+        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null && userMarker != null && mMap != null) {
+            displayToast("change location");
+            userLat = location.getLatitude();
+            userLng = location.getLatitude();
+            LatLng position = new LatLng(userLng, userLat);
+            userMarker.setPosition(position);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, currentZoomLevel));
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+    }
+
 
     private class MapClusterRenderer extends DefaultClusterRenderer<MapCluster> implements GoogleMap.OnCameraIdleListener {
         private final Context mContext;
-        private float currentZoomLevel;
 
         public MapClusterRenderer(Context context, GoogleMap map, ClusterManager<MapCluster> clusterManager) {
             super(context, map, clusterManager);
