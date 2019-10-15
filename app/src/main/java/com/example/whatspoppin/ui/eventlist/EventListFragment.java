@@ -30,7 +30,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -81,24 +80,27 @@ public class EventListFragment extends ListFragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = (TextView) view.findViewById(R.id.text_eventName);
                 String[] eventName = tv.getText().toString().split("\n");
-                //Toast.makeText(getActivity().getApplicationContext(), eventName[0], Toast.LENGTH_SHORT).show();
 
+                // find selected event
                 Event event = new Event();
                 for (Event e : eventArrayList) {
-                    if (e.getEventName().trim().equals(eventName[0].trim())) {
+                    String evt = e.getEventName().trim();
+                    evt = evt.replaceAll("\\s+","");
+                    String sel = eventName[0].trim();
+                    sel = sel.replaceAll("\\s+","");
+                    if (evt.equalsIgnoreCase(sel)) {
                         event = e;
                         break;
                     }
                 }
 
-                Intent intent = new Intent(getContext(), EventDetailsFragment.class);
-                Bundle args = new Bundle();
-                args.putSerializable("EVENT", event);
-                //args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
-                args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
-                intent.putExtra("BUNDLE", args);
-                //intent.putExtra("eventName", eventName[0].trim());
+                // open new activity - event details
                 try{
+                    Intent intent = new Intent(getContext(), EventDetailsFragment.class);
+                    Bundle args = new Bundle();
+                    args.putSerializable("EVENT", event);
+                    args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
+                    intent.putExtra("BUNDLE", args);
                     startActivity(intent);
                 }catch(Exception e ){
                     Log.e("START ACTIVITY", e.getMessage());
@@ -235,41 +237,4 @@ public class EventListFragment extends ListFragment {
             }
         });
     }
-
-/*    public void getFirebaseData() {
-        eventArrayList.clear();
-        dbRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    String name = ds.child("name").getValue(String.class);
-                    String address = ds.child("address").getValue(String.class);
-                    String category = ds.child("category").getValue(String.class);
-                    String description = ds.child("description").getValue(String.class);
-                    String datetime_start = ds.child("datetime_start").getValue(String.class);
-                    String datetime_end = ds.child("datetime_end").getValue(String.class);
-                    String url = ds.child("url").getValue(String.class);
-                    String imageUrl = ds.child("imageUrl").getValue(String.class);
-                    String lng = ds.child("lng").getValue(float.class).toString();
-                    String lat = ds.child("lat").getValue(float.class).toString();
-                    String location_summary = ds.child("location_summary").getValue(String.class);
-                    String source = ds.child("source").getValue(String.class);
-
-                    Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                            imageUrl, lng, lat, location_summary, source);
-
-                    Log.d("EVENT", String.valueOf(event));
-                    eventArrayList.add(event);
-                }
-                eventAdapter = new EventAdapter(getActivity().getApplicationContext(), eventArrayList);
-                eventList.setAdapter(eventAdapter);
-                eventAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("The read failed: " + databaseError.getCode());
-            }
-        });
-    }*/
 }

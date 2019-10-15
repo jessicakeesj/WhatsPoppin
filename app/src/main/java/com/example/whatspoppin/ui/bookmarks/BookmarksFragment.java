@@ -79,7 +79,6 @@ public class BookmarksFragment extends ListFragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = (TextView) view.findViewById(R.id.text_eventName);
                 String[] eventName = tv.getText().toString().split("\n");
-                //Toast.makeText(getActivity().getApplicationContext(), eventName[0], Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                 Bundle args = new Bundle();

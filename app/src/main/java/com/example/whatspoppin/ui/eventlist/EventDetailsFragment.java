@@ -15,26 +15,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.SignIn;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 public class EventDetailsFragment extends AppCompatActivity {
 
@@ -66,10 +60,9 @@ public class EventDetailsFragment extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("BUNDLE");
         event = (Event) args.getSerializable("EVENT");
-        //eventArrayList = (ArrayList<Event>) args.getSerializable("EVENTLIST");
         bookmarkList = (ArrayList<Event>) args.getSerializable("BOOKMARKLIST");
-        //eventName = intent.getExtras().getString("eventName");
 
+        //set view
         eventNameTV = findViewById(R.id.details_eventName);
         eventSummaryTV = findViewById(R.id.details_eventSummary);
         eventImage = findViewById(R.id.details_eventImage);
@@ -78,7 +71,6 @@ public class EventDetailsFragment extends AppCompatActivity {
         linkBtn = findViewById(R.id.details_eventLink);
         bookmarkImg = (ImageView) findViewById(R.id.details_bookmark);
 
-        URL url = null;
         try {
             if(event.getEventImageUrl().contains("http")){
                 Picasso.get().load(event.getEventImageUrl()).into(eventImage);
@@ -161,7 +153,6 @@ public class EventDetailsFragment extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -227,86 +218,5 @@ public class EventDetailsFragment extends AppCompatActivity {
             e.printStackTrace();
         }
         return dateString;
-    }
-
-    public void getBookmarksFirestore_(){
-        bookmarkList.clear();
-        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        String email = document.getString("userEmail");
-                        ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
-
-                        for(HashMap<String,String> testMap : bkm){
-                            String name = testMap.get("eventName");
-                            String address = testMap.get("eventAddress");
-                            String category = testMap.get("eventCategory");
-                            String description = testMap.get("eventDescription");
-                            String datetime_start = testMap.get("event_datetime_start");
-                            String datetime_end = testMap.get("event_datetime_end");
-                            String url = testMap.get("eventUrl");
-                            String imageUrl = testMap.get("eventImageUrl");
-                            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
-                            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
-                            String location_summary = testMap.get("eventLocationSummary");
-                            String source = testMap.get("eventSource");
-
-                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                                    imageUrl, lng, lat, location_summary, source);
-                            bookmarkList.add(event);
-                        }
-                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        Log.d("getBookmarks", "No such document");
-                    }
-                } else {
-                    Log.d("getBookmarks", "get failed with ", task.getException());
-                }
-            }
-        });
-    }
-
-    public void getBookmarksFirestore(){
-        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        String email = document.getString("userEmail");
-                        ArrayList<HashMap<String,String>> bkm= (ArrayList<HashMap<String,String>>) document.get("bookmarks");
-                        bookmarkList.clear();
-                        for(HashMap<String,String> testMap : bkm){
-                            //HashMap<String, String> testMap = new HashMap<String, String>();
-                            //testMap = (HashMap<String, String>) document.get("bookmarks");
-                            String name = testMap.get("eventName");
-                            String address = testMap.get("eventAddress");
-                            String category = testMap.get("eventCategory");
-                            String description = testMap.get("eventDescription");
-                            String datetime_start = testMap.get("event_datetime_start");
-                            String datetime_end = testMap.get("event_datetime_end");
-                            String url = testMap.get("eventUrl");
-                            String imageUrl = testMap.get("eventImageUrl");
-                            String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
-                            String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
-                            String location_summary = testMap.get("eventLocationSummary");
-                            String source = testMap.get("eventSource");
-
-                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                                    imageUrl, lng, lat, location_summary, source);
-                            bookmarkList.add(event);
-                        }
-                        Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        Log.d("getBookmarks", "No such document");
-                    }
-                } else {
-                    Log.d("getBookmarks", "get failed with ", task.getException());
-                }
-            }
-        });
     }
 }
