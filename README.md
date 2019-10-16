@@ -6,3 +6,7 @@
 * [More Reference for Setting up](https://codinginfinite.com/android-google-map-custom-marker-clustering/)
 * [Customizing Marker](https://medium.com/@imstudio/android-google-maps-clustering-41f220f8f4d0)
 * [Cluster Click Event](https://medium.com/@tonyshkurenko/work-with-clustermanager-bdf3d70fb0fd)
+
+## Android Current Location
+Kind of only works on a physical device. Emulator doesn't works.
+* [Get last known location](https://developer.android.com/training/location/retrieve-current.html)
