@@ -19,7 +19,7 @@ public class Splashscreen extends AppCompatActivity {
             public void run() {
                 try {
                     for (progress = 10; progress < 100; progress = progress + 10) {
-                        sleep(300); //run for 3 secs then sleep
+                        sleep(200); //run for 2 secs then sleep
                         progressBar.setProgress(progress);
                     }
                     Intent intent = new Intent(getApplicationContext(), SignIn.class); //to direct it to this activity after the splash screen finishes
