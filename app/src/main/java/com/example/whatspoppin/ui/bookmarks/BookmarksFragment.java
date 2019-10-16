@@ -80,13 +80,28 @@ public class BookmarksFragment extends ListFragment {
                 TextView tv = (TextView) view.findViewById(R.id.text_eventName);
                 String[] eventName = tv.getText().toString().split("\n");
 
-                Intent intent = new Intent(getContext(), EventDetailsFragment.class);
-                Bundle args = new Bundle();
-                args.putSerializable("EVENTLIST", (Serializable) eventArrayList);
-                args.putSerializable("BOOKMARKLIST", (Serializable) bookmarkArrayList);
-                intent.putExtra("BUNDLE", args);
-                intent.putExtra("eventName", eventName[0].trim());
-                startActivity(intent);
+                Event event = new Event();
+                for (Event e : bookmarkArrayList) {
+                    String evt = e.getEventName().trim();
+                    evt = evt.replaceAll("\\s+","");
+                    String sel = eventName[0].trim();
+                    sel = sel.replaceAll("\\s+","");
+                    if (evt.equalsIgnoreCase(sel)) {
+                        event = e;
+                        break;
+                    }
+                }
+
+                try{
+                    Intent intent = new Intent(getContext(), EventDetailsFragment.class);
+                    Bundle args = new Bundle();
+                    args.putSerializable("EVENT", event);
+                    args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
+                    intent.putExtra("BUNDLE", args);
+                    startActivity(intent);
+                }catch(Exception e ){
+                    Log.e("START ACTIVITY", e.getMessage());
+                }
             }
         });
 
