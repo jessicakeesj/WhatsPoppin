@@ -8,18 +8,20 @@ public class AccountUser {
     private ArrayList<Event> bookmarks = new ArrayList<Event>();
     private ArrayList<String> interests = new ArrayList<String>();
     private boolean receiveNotification;
+    private boolean showNearbyEvents;
 
     public AccountUser(){
 
     }
 
     public AccountUser(String userId, String userEmail, ArrayList<Event> bookmarks, ArrayList<String> interests,
-                       boolean receiveNotification) {
+                       boolean receiveNotification, boolean showNearbyEvents) {
         this.userId = userId;
         this.userEmail = userEmail;
         this.bookmarks = bookmarks;
         this.interests = interests;
         this.receiveNotification = receiveNotification;
+        this.showNearbyEvents = showNearbyEvents;
     }
 
     public String getUserId() {
@@ -60,5 +62,13 @@ public class AccountUser {
 
     public void setReceiveNotification(boolean receiveNotification) {
         this.receiveNotification = receiveNotification;
+    }
+
+    public boolean isShowNearbyEvents() {
+        return showNearbyEvents;
+    }
+
+    public void setShowNearbyEvents(boolean showNearbyEvents) {
+        this.showNearbyEvents = showNearbyEvents;
     }
 }

@@ -34,6 +34,7 @@ public class SignUp extends AppCompatActivity {
     private ArrayList<Event> bookmarks = new ArrayList<Event>();
     private ArrayList<String> interests = new ArrayList<String>();
     private boolean receiveNotification;
+    private boolean showNearbyEvents;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -70,6 +71,8 @@ public class SignUp extends AppCompatActivity {
         bookmarks.clear();
         interests.clear();
         receiveNotification = false;
+        showNearbyEvents = false;
+
 
         if (TextUtils.isEmpty(email)) {
             Toast.makeText(getApplicationContext(), "Please enter email!", Toast.LENGTH_LONG).show();
@@ -91,7 +94,7 @@ public class SignUp extends AppCompatActivity {
                             if (currentUser != null){
                                 String userId = currentUser.getUid();
                                 String email = currentUser.getEmail();
-                                user = new AccountUser(userId, email, bookmarks,interests, receiveNotification);
+                                user = new AccountUser(userId, email, bookmarks,interests, receiveNotification, showNearbyEvents);
                                 setFireStoreData(user);
                             }
 
