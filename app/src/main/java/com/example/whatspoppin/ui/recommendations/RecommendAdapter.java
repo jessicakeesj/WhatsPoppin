@@ -69,7 +69,7 @@ public class RecommendAdapter extends BaseAdapter implements Filterable {
             protected FilterResults performFiltering(CharSequence charSequence)
             {
                 FilterResults results = new FilterResults();
-
+                String charString = charSequence.toString();
                 //If there's nothing to filter on, return the original data to list
                 if(charSequence == null || charSequence.length() == 0)
                 {
@@ -81,7 +81,7 @@ public class RecommendAdapter extends BaseAdapter implements Filterable {
 
                     for(Event e : recommendList)
                     {
-                        if(e.getEventName().contains(charSequence))
+                        if(e.getEventName().toLowerCase().contains(charString.toLowerCase()))
                         {
                             filterResultsData.add(e);
                         }
