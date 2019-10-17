@@ -27,9 +27,8 @@
             android:label="@string/title_activity_nav_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ui.eventlist.EventDetailsFragment"/>
-        <activity android:name=".SignUp" />
-        <activity android:name=".SignIn" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".ui.authentication.SignUp" />
+        <activity android:name=".ui.authentication.SignIn" />
         <activity android:name=".Splashscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

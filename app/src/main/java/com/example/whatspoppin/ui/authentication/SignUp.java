@@ -1,4 +1,4 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.ui.authentication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +11,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.text.TextUtils;
 import android.widget.Toast;
+import com.example.whatspoppin.AccountUser;
+import com.example.whatspoppin.Event;
+import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -20,7 +23,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 
 public class SignUp extends AppCompatActivity {

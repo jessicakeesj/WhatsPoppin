@@ -12,10 +12,12 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.ViewModelProviders;
+
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.RecommendAdapter;
@@ -31,7 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -232,11 +234,6 @@ public class RecommendationsFragment extends ListFragment {
                     } else {
                         Log.d("getBookmarks", "No such document");
                     }
-                    /*if(getActivity()!=null){
-                        recommendAdapter = new RecommendAdapter(getActivity(), rec_eventArrayList);
-                        eventList.setAdapter(recommendAdapter);
-                        recommendAdapter.notifyDataSetChanged();
-                    }*/
                     getRecommendations();
                 } else {
                     Log.d("getBookmarks", "get failed with ", task.getException());

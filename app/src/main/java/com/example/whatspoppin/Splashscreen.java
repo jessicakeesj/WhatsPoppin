@@ -5,6 +5,8 @@ import android.widget.ProgressBar;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.example.whatspoppin.ui.authentication.SignIn;
+
 public class Splashscreen extends AppCompatActivity {
     private ProgressBar progressBar;
     private int progress;

@@ -7,13 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
-import android.widget.TextView;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
-
 import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -31,7 +28,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.ArrayList;
 
 public class EditPreferencesFragment extends Fragment {
@@ -63,10 +59,7 @@ public class EditPreferencesFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        //super.onViewCreated(view, savedInstanceState);
-
         getEventCategories();
-        //realtimeFireStoreData();
         preferenceCG = view.findViewById(R.id.preference_chipgroup);
         notificationSwitch = view.findViewById(R.id.notification_switch);
         locationSwitch = view.findViewById(R.id.location_switch);
@@ -142,7 +135,6 @@ public class EditPreferencesFragment extends Fragment {
                         categories_Selected.remove(newChip.getText().toString());
                     }
                     updatePreferenceFirestore();
-                    //Toast.makeText(getActivity(), "Chip is "+ newChip.getText().toString(), Toast.LENGTH_SHORT).show();
                 }
             });
             preferenceCG.addView(newChip);
