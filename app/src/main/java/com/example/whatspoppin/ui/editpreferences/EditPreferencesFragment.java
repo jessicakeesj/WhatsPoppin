@@ -32,7 +32,6 @@ import java.util.ArrayList;
 
 public class EditPreferencesFragment extends Fragment {
 
-    private EditPreferencesViewModel editPreferencesViewModel;
     private ArrayList<String> eventCategories = new ArrayList<>();
     private ArrayList<String> categories_Selected = new ArrayList<>();
     private ChipGroup preferenceCG;
@@ -46,7 +45,6 @@ public class EditPreferencesFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        editPreferencesViewModel = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
         View root = inflater.inflate(R.layout.fragment_editpreferences, container, false);
 
         mAuth = FirebaseAuth.getInstance();

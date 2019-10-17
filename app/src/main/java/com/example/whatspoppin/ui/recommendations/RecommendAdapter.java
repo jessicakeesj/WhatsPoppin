@@ -1,4 +1,4 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.ui.recommendations;
 
 import android.content.Context;
 import android.text.Html;
@@ -9,39 +9,35 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
-import com.google.firebase.database.FirebaseDatabase;
+import com.example.whatspoppin.Event;
+import com.example.whatspoppin.R;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class EventAdapter extends BaseAdapter implements Filterable {
-    private ArrayList<Event> eventList = new ArrayList<Event>();
+public class RecommendAdapter extends BaseAdapter implements Filterable {
+    private ArrayList<Event> recommendList = new ArrayList<Event>();
     private ArrayList<Event> filteredList = new ArrayList<Event>();
     private Context context;
-
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    //private DatabaseReference dbRef = database.getReference("events");
-
     private static LayoutInflater inflater = null;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public EventAdapter(Context context, ArrayList<Event> eventList) {
+    public RecommendAdapter(Context context, ArrayList<Event> recommendList) {
         this.context = context;
-        this.eventList = eventList;
+        this.recommendList = recommendList;
         this.filteredList = new ArrayList<Event>();
-        this.filteredList.addAll(eventList);
+        this.filteredList.addAll(recommendList);
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Event event = filteredList.get(position);
-        //View v = vi.inflate(R.layout.eventlist_item, null);
         View v = convertView;
-        if (convertView == null)v = inflater.inflate(R.layout.eventlist_item, null);
+        if (convertView == null)v = inflater.inflate(R.layout.recommendlist_item, null);
 
-        TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
+        TextView eventName = (TextView) v.findViewById(R.id.text_recommendName);
 
         String dateString = formatDate(event.getEvent_datetime_start());
         String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
@@ -77,13 +73,13 @@ public class EventAdapter extends BaseAdapter implements Filterable {
                 //If there's nothing to filter on, return the original data to list
                 if(charSequence == null || charSequence.length() == 0)
                 {
-                    results.values = eventList;
-                    results.count = eventList.size();
+                    results.values = recommendList;
+                    results.count = recommendList.size();
                 } else
                 {
                     ArrayList<Event> filterResultsData = new ArrayList<Event>();
 
-                    for(Event e : eventList)
+                    for(Event e : recommendList)
                     {
                         if(e.getEventName().contains(charSequence))
                         {

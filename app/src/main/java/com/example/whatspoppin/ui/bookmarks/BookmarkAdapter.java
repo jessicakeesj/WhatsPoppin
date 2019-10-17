@@ -1,4 +1,4 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.ui.bookmarks;
 
 import android.content.Context;
 import android.text.Html;
@@ -9,6 +9,10 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import com.example.whatspoppin.Event;
+import com.example.whatspoppin.ui.eventlist.EventAdapter;
+import com.example.whatspoppin.R;
 import com.google.firebase.database.FirebaseDatabase;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

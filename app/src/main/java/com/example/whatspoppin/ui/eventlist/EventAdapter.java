@@ -1,4 +1,4 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.ui.eventlist;
 
 import android.content.Context;
 import android.text.Html;
@@ -9,27 +9,27 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import com.example.whatspoppin.Event;
+import com.example.whatspoppin.R;
 import com.google.firebase.database.FirebaseDatabase;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class RecommendAdapter extends BaseAdapter implements Filterable {
-    private ArrayList<Event> recommendList = new ArrayList<Event>();
+public class EventAdapter extends BaseAdapter implements Filterable {
+    private ArrayList<Event> eventList = new ArrayList<Event>();
     private ArrayList<Event> filteredList = new ArrayList<Event>();
-    private ArrayList<String> preferenceList = new ArrayList<String>();
     private Context context;
-    private EventAdapter eventAdapter;
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private static LayoutInflater inflater = null;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public RecommendAdapter(Context context, ArrayList<Event> recommendList) {
+    public EventAdapter(Context context, ArrayList<Event> eventList) {
         this.context = context;
-        this.recommendList = recommendList;
+        this.eventList = eventList;
         this.filteredList = new ArrayList<Event>();
-        this.filteredList.addAll(recommendList);
+        this.filteredList.addAll(eventList);
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -37,12 +37,15 @@ public class RecommendAdapter extends BaseAdapter implements Filterable {
     public View getView(int position, View convertView, ViewGroup parent) {
         Event event = filteredList.get(position);
         View v = convertView;
-        if (convertView == null)v = inflater.inflate(R.layout.recommendlist_item, null);
-
-        TextView eventName = (TextView) v.findViewById(R.id.text_recommendName);
-
+        if (convertView == null)v = inflater.inflate(R.layout.eventlist_item, null);
+        TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
         String dateString = formatDate(event.getEvent_datetime_start());
-        String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
+        String sourceString;
+        if(event.getEventLocationSummary() == null || event.getEventLocationSummary() == "null"){
+            sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString;
+        }else{
+            sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
+        }
         eventName.setText(Html.fromHtml(sourceString));
         return v;
     }
@@ -75,20 +78,19 @@ public class RecommendAdapter extends BaseAdapter implements Filterable {
                 //If there's nothing to filter on, return the original data to list
                 if(charSequence == null || charSequence.length() == 0)
                 {
-                    results.values = recommendList;
-                    results.count = recommendList.size();
+                    results.values = eventList;
+                    results.count = eventList.size();
                 } else
                 {
                     ArrayList<Event> filterResultsData = new ArrayList<Event>();
 
-                    for(Event e : recommendList)
+                    for(Event e : eventList)
                     {
                         if(e.getEventName().contains(charSequence))
                         {
                             filterResultsData.add(e);
                         }
                     }
-
                     results.values = filterResultsData;
                     results.count = filterResultsData.size();
                 }

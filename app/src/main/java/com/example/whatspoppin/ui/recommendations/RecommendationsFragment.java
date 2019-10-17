@@ -16,11 +16,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
-import com.example.whatspoppin.RecommendAdapter;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -41,7 +39,6 @@ public class RecommendationsFragment extends ListFragment {
     private ArrayList<Event> rec_eventArrayList = new ArrayList<>();
     private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
     private ArrayList<String> preferenceArrayList = new ArrayList<>();
-    private RecommendationsViewModel recommendationsViewModel;
     private RecommendAdapter recommendAdapter;
     private ListView eventList;
     private EditText search;
@@ -53,7 +50,6 @@ public class RecommendationsFragment extends ListFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        recommendationsViewModel = ViewModelProviders.of(this).get(RecommendationsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_recommendations, container, false);
         return root;
     }

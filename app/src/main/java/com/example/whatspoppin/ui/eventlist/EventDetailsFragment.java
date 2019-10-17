@@ -85,7 +85,7 @@ public class EventDetailsFragment extends AppCompatActivity {
         String startDate = formatDate(event.getEvent_datetime_start());
         String endDate = formatDate(event.getEvent_datetime_end());
 
-        String detailsString = "<b> Event Details: </b>" + "<br>" + startDate + " - " + endDate + "<br>" + event.getEventLocationSummary();
+        String detailsString = "<b> Event Details: </b>" + "<br>" + startDate + " - " + endDate + "<br>" + event.getEventAddress();
         eventDetails.setText(Html.fromHtml(detailsString));
         eventSummaryTV.setText(event.getEventDescription());
         eventSource.setText("Source: " + event.getEventSource());

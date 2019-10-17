@@ -16,9 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
-import androidx.lifecycle.ViewModelProviders;
 
-import com.example.whatspoppin.BookmarkAdapter;
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
@@ -40,7 +38,6 @@ import java.util.HashMap;
 public class BookmarksFragment extends ListFragment {
     private ArrayList<Event> bookmarkArrayList = new ArrayList<Event>();
     private ArrayList<Event> eventArrayList = new ArrayList<Event>();
-    private BookmarksViewModel bookmarksListViewModel;
     private BookmarkAdapter bookmarkAdapter;
     private ListView eventList;
     private EditText search;
@@ -52,7 +49,6 @@ public class BookmarksFragment extends ListFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        bookmarksListViewModel = ViewModelProviders.of(this).get(BookmarksViewModel.class);
         View root = inflater.inflate(R.layout.fragment_bookmarks, container, false);
         return root;
     }
