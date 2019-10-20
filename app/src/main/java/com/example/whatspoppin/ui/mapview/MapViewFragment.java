@@ -66,6 +66,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<MapCluster> clusterRecommendedMarkers = new ArrayList<>();
     private ArrayList<String> userBookmarks = new ArrayList<>();
     private ArrayList<String> userPreferences = new ArrayList<>();
+    private boolean showNearbyEvent = false;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GoogleMap mMap;
@@ -86,7 +87,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // check location permission
         if (ActivityCompat.checkSelfPermission(getContext(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -250,6 +250,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         }
                         // get preferences list
                         userPreferences.addAll((ArrayList<String>) document.get("interests"));
+                        showNearbyEvent = (boolean) document.get("showNearbyEvents");
 
                         // add markers
                         createEventsMapMarkers();
@@ -274,9 +275,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         // add markers
         for (Event event : eventArrayList) {
-            String lat = event.getEventLatitude();
-            String lng = event.getEventLongitude();
-            if (!(lat == null && lng == null)) {
+            if (!(event.getEventLatitude() == null && event.getEventLongitude() == null)) {
+                Double lat = Double.parseDouble(event.getEventLatitude());
+                Double lng = Double.parseDouble(event.getEventLongitude());
                 String name = event.getEventName();
                 String desc = event.getEventDescription();
                 if (desc.length() > 50 && desc.length() >= name.length()) { // show some description only
@@ -289,9 +290,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     markerType = MapCluster.EventType.Bookmark;
                 } else if (userPreferences.contains(event.getEventCategory())) { // recommended event markers
                     markerType = MapCluster.EventType.Recommend;
+                } else if ((lat >= userLat - 0.005 && lat <= userLat + 0.005) &&
+                        (lng >= userLng - 0.005 && lng <= userLng + 0.005) && showNearbyEvent) {
+                    markerType = MapCluster.EventType.Recommend;
                 }
-                MapCluster mm = new MapCluster(name, Double.parseDouble(lat), Double.parseDouble(lng),
-                        desc, event, markerType);
+                MapCluster mm = new MapCluster(name, lat, lng, desc, event, markerType);
 
                 // add an instance of the marker to list
                 MapCluster mc = mm;
@@ -397,7 +400,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         @Override
         public void onCameraIdle() {
             currentZoomLevel = mMap.getCameraPosition().zoom;
-            displayToast(String.valueOf(currentZoomLevel));
+//            displayToast(String.valueOf(currentZoomLevel));
         }
     }
 }
