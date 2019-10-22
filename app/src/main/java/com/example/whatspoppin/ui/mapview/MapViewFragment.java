@@ -92,6 +92,21 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 && ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION}, 1);
         }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            usersDoc = db.collection("users").document(currentUser.getUid());
+        }
+        getFireStoreEvents();
+//        realtimeFireStoreData();
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
 
         // get location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -115,21 +130,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         }
                     }
                 });
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            usersDoc = db.collection("users").document(currentUser.getUid());
-        }
-        getFireStoreEvents();
-//        realtimeFireStoreData();
-        // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map_fragment);  //use SuppoprtMapFragment for using in fragment instead of activity  MapFragment = activity   SupportMapFragment = fragment
@@ -322,6 +322,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         mMap.clear(); //clear old markers
+        userMarker = null;
         setUpClusterer(mMap);
 
         // Map Ui Settings
