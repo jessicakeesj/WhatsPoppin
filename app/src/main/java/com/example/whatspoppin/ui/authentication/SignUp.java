@@ -90,7 +90,6 @@ public class SignUp extends AppCompatActivity {
         if(validateEmail(email) && password.length() >= 8 && password.length() <= 20){
             checkAuth = true;
         }else {
-            int a = password.length();
             if(!validateEmail(email)){
                 Toast.makeText(getApplicationContext(), "Registration Failed. Please enter a valid email address!", Toast.LENGTH_SHORT).show();
             }else if(password.length() < 8 || password.length() > 20) {

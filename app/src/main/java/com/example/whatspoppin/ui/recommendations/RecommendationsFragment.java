@@ -80,25 +80,13 @@ public class RecommendationsFragment extends ListFragment {
 
         eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView tv = (TextView) view.findViewById(R.id.text_recommendName);
-                String[] eventName = tv.getText().toString().split("\n");
-                Event event = new Event();
-                for (Event e : rec_eventArrayList) {
-                    String evt = e.getEventName().trim();
-                    evt = evt.replaceAll("\\s+","");
-                    String sel = eventName[0].trim();
-                    sel = sel.replaceAll("\\s+","");
-                    if (evt.equalsIgnoreCase(sel)) {
-                        event = e;
-                        break;
-                    }
-                }
-
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+                // open event details
                 try{
                     Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                     Bundle args = new Bundle();
-                    args.putSerializable("EVENT", event);
+                    args.putSerializable("EVENT", clickedEvent);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                     intent.putExtra("BUNDLE", args);
                     startActivity(intent);

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -53,7 +54,7 @@ public class EventListFragment extends ListFragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        eventList = (ListView) view.findViewById(R.id.list_eventList);
+        eventList = (ListView) view.findViewById(R.id.eventList_list);
         search = (EditText) view.findViewById(R.id.eventlist_inputSearch);
 
         mAuth = FirebaseAuth.getInstance();
@@ -75,28 +76,13 @@ public class EventListFragment extends ListFragment {
 
         eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView tv = (TextView) view.findViewById(R.id.text_eventName);
-                String[] eventName = tv.getText().toString().split("\n");
-
-                // find selected event
-                Event event = new Event();
-                for (Event e : eventArrayList) {
-                    String evt = e.getEventName().trim();
-                    evt = evt.replaceAll("\\s+","");
-                    String sel = eventName[0].trim();
-                    sel = sel.replaceAll("\\s+","");
-                    if (evt.equalsIgnoreCase(sel)) {
-                        event = e;
-                        break;
-                    }
-                }
-
-                // open new activity - event details
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+                // open event details
                 try{
                     Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                     Bundle args = new Bundle();
-                    args.putSerializable("EVENT", event);
+                    args.putSerializable("EVENT", clickedEvent);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                     intent.putExtra("BUNDLE", args);
                     startActivity(intent);
