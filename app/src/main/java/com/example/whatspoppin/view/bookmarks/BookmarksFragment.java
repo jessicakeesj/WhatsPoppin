@@ -15,15 +15,16 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.adapter.BookmarkAdapter;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.view.eventlist.EventDetailsFragment;
 import com.example.whatspoppin.viewmodel.BookmarksViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 
 public class BookmarksFragment extends ListFragment {
