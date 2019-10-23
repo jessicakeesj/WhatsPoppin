@@ -1,15 +1,12 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.view;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.ProgressBar;
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.example.whatspoppin.ui.authentication.SignIn;
-import com.example.whatspoppin.ui.authentication.SignUp;
+import com.example.whatspoppin.R;
+import com.example.whatspoppin.view.authentication.SignIn;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class Splashscreen extends AppCompatActivity {
     private ProgressBar progressBar;

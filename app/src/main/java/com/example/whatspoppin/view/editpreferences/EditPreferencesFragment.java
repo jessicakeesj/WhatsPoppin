@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.editpreferences;
+package com.example.whatspoppin.view.editpreferences;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -7,13 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
-
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-
 import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -26,12 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.ArrayList;
 
 public class EditPreferencesFragment extends Fragment {
@@ -251,7 +243,7 @@ public class EditPreferencesFragment extends Fragment {
                     } else {
                         Log.d("getPreferences", "No such document");
                     }
-//                    setupView();
+                    //setupView();
                 } else {
                     Log.d("getPreferences", "get failed with ", task.getException());
                 }

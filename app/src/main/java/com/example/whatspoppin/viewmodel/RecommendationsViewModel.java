@@ -1,25 +1,12 @@
-package com.example.whatspoppin.ui.eventlist;
+package com.example.whatspoppin.viewmodel;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.ListFragment;
-
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 import com.example.whatspoppin.model.Event;
-import com.example.whatspoppin.R;
-import com.example.whatspoppin.adapter.EventAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,85 +21,42 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class EventListFragment extends ListFragment {
-    private ArrayList<Event> eventArrayList = new ArrayList<Event>();
-    private ArrayList<Event> bookmarkArrayList = new ArrayList<Event>();
-    private EventAdapter eventAdapter;
-    private ListView eventList;
-    private EditText search;
+public class RecommendationsViewModel extends ViewModel {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
+    private ArrayList<Event> rec_events = new ArrayList<Event>();
+    private ArrayList<String> preferences = new ArrayList<>();
+    private ArrayList<Event> bookmarks = new ArrayList<Event>();
+    private MutableLiveData<ArrayList<Event>> rec_eventArrayList;
+    private MutableLiveData<ArrayList<Event>> bookmarkArrayList;
     private DocumentReference usersDoc;
     private FirebaseUser currentUser;
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_eventlist, container, false);
-        return root;
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        eventList = (ListView) view.findViewById(R.id.eventList_list);
-        search = (EditText) view.findViewById(R.id.eventlist_inputSearch);
-
+    public RecommendationsViewModel() {
+        // get current login user
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
-
-        eventArrayList.clear();
-        bookmarkArrayList.clear();
-
-        getFireStoreData();
-        getBookmarksFirestore();
-        realtimeFireStoreData();
-
-        eventAdapter = new EventAdapter(getActivity(), eventArrayList);
-        eventList.setAdapter(eventAdapter);
-        eventAdapter.notifyDataSetChanged();
-
-        eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
-                // open event details
-                try{
-                    Intent intent = new Intent(getContext(), EventDetailsFragment.class);
-                    Bundle args = new Bundle();
-                    args.putSerializable("EVENT", clickedEvent);
-                    args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
-                    intent.putExtra("BUNDLE", args);
-                    startActivity(intent);
-                }catch(Exception e ){
-                    Log.e("START ACTIVITY", e.getMessage());
-                }
-            }
-        });
-
-        search.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                EventListFragment.this.eventAdapter.getFilter().filter(s);
-                eventList.setAdapter(eventAdapter);
-                eventAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
     }
 
-    //checks firestore for realtime updates
+    public LiveData<ArrayList<Event>> getBookmarkList() {
+        if (bookmarkArrayList == null) {
+            bookmarkArrayList = new MutableLiveData<ArrayList<Event>>();
+            realtimeFireStoreData();
+        }
+        return bookmarkArrayList;
+    }
+
+    public LiveData<ArrayList<Event>> getRecommendationList() {
+        if (rec_eventArrayList == null) {
+            rec_eventArrayList = new MutableLiveData<ArrayList<Event>>();
+            realtimeFireStoreData();
+        }
+        return rec_eventArrayList;
+    }
+
     public void realtimeFireStoreData() {
         usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -123,26 +67,24 @@ public class EventListFragment extends ListFragment {
                     return;
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    getFireStoreData();
-                    getBookmarksFirestore();
+                    getFireStorePreferenceData();
+                    getFireStoreBookmarksData();
                 } else {
-                    getFireStoreData();
-                    getBookmarksFirestore();
+                    getFireStorePreferenceData();
+                    getFireStoreBookmarksData();
                 }
             }
         });
     }
 
-    public void getFireStoreData() {
-        eventArrayList.clear();
+    private void getRecommendationData() {
+        rec_events.clear();
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                int i = 0;
                 if (task.isSuccessful()) {
-                    eventArrayList.clear();
+                    rec_events.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
-
                         if (document != null) {
                             String name = document.getId();
                             String address = document.getString("address");
@@ -157,19 +99,17 @@ public class EventListFragment extends ListFragment {
                             String location_summary = document.getString("location_summary");
                             String source = document.getString("source");
 
-                            Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
-                                    imageUrl, lng, lat, location_summary, source);
-                            eventArrayList.add(event);
+                            if (preferences.contains(category)) {
+                                Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
+                                        imageUrl, lng, lat, location_summary, source);
+                                rec_events.add(event);
+                            }
                         } else {
                             Log.d("saveToEventArrayList", "No such document");
                         }
                         Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
-                    if(getActivity()!=null){
-                        eventAdapter = new EventAdapter(getActivity(), eventArrayList);
-                        eventList.setAdapter(eventAdapter);
-                        eventAdapter.notifyDataSetChanged();
-                    }
+                    rec_eventArrayList.setValue(rec_events);
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
                 }
@@ -177,15 +117,46 @@ public class EventListFragment extends ListFragment {
         });
     }
 
-    public void getBookmarksFirestore(){
-        bookmarkArrayList.clear();
+    private void getFireStorePreferenceData() {
+        preferences.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(Task<DocumentSnapshot> task) {
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                        bookmarkArrayList.clear();
+                        preferences.clear();
+                        String b = String.valueOf(document.get("interests"));
+                        if (b != "null" || b != null || b != "[]") {
+                            ArrayList<String> bkm = (ArrayList<String>) document.get("interests");
+                            for (String testMap : bkm) {
+                                String name = testMap;
+                                preferences.add(name);
+                            }
+                        } else {
+                            preferences = null;
+                        }
+                        Log.d("getPreferences", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("getPreferences", "No such document");
+                    }
+                    getRecommendationData();
+                } else {
+                    Log.d("getPreferences", "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    private void getFireStoreBookmarksData() {
+        bookmarks.clear();
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        bookmarks.clear();
                         String email = document.getString("userEmail");
                         String b = String.valueOf(document.get("bookmarks"));
                         if(b != "null" || b != null || b != "[]"){
@@ -206,15 +177,16 @@ public class EventListFragment extends ListFragment {
 
                                 Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                         imageUrl, lng, lat, location_summary, source);
-                                bookmarkArrayList.add(event);
+                                bookmarks.add(event);
                             }
                         }else{
-                            bookmarkArrayList = null;
+                            bookmarks = null;
                         }
                         Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getBookmarks", "No such document");
                     }
+                    bookmarkArrayList.setValue(bookmarks);
                 } else {
                     Log.d("getBookmarks", "get failed with ", task.getException());
                 }

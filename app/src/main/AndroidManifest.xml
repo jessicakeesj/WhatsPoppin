@@ -23,13 +23,13 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".NavDrawer"
+            android:name=".view.NavDrawer"
             android:label="@string/title_activity_nav_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.eventlist.EventDetailsFragment"/>
-        <activity android:name=".ui.authentication.SignUp" />
-        <activity android:name=".ui.authentication.SignIn" />
-        <activity android:name=".Splashscreen">
+        <activity android:name=".view.eventlist.EventDetails"/>
+        <activity android:name=".view.authentication.SignUp" />
+        <activity android:name=".view.authentication.SignIn" />
+        <activity android:name=".view.Splashscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

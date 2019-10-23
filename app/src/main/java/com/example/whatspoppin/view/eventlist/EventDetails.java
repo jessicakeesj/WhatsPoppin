@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.eventlist;
+package com.example.whatspoppin.view.eventlist;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -7,19 +7,17 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.whatspoppin.model.Event;
+import androidx.lifecycle.ViewModelProviders;
 import com.example.whatspoppin.R;
-import com.example.whatspoppin.ui.authentication.SignIn;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.whatspoppin.model.Event;
+import com.example.whatspoppin.view.authentication.SignIn;
+import com.example.whatspoppin.viewmodel.EventDetailsViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -29,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class EventDetailsFragment extends AppCompatActivity {
+public class EventDetails extends AppCompatActivity {
 
     private TextView eventNameTV, eventSummaryTV, eventDetails, eventSource;
     private ImageView eventImage, bookmarkImg;
@@ -39,21 +37,24 @@ public class EventDetailsFragment extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ArrayList<Event> bookmarkList = new ArrayList<>();
     private DocumentReference usersDoc;
+    private FirebaseUser currentUser;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private EventDetailsViewModel eventDetailsViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_eventdetails);
+        setContentView(R.layout.activity_eventdetails);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
 
+        eventDetailsViewModel = ViewModelProviders.of(this).get(EventDetailsViewModel.class);
+        final EventDetailsViewModel model = ViewModelProviders.of(this).get(EventDetailsViewModel.class);
         bookmarkList.clear();
-
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("BUNDLE");
         event = (Event) args.getSerializable("EVENT");
@@ -122,13 +123,13 @@ public class EventDetailsFragment extends AppCompatActivity {
                     }
                     if(mock!=null){
                         bookmarkList.remove(mock);
-                        updateBookmarksFirestore();
+                        model.updateBookmarksFirestore(bookmarkList);
                         bookmarkImg.setImageResource(R.drawable.ic_unmarked);
                     }
                 }else{
                     if(!bookmarkList.contains(event)){
                         bookmarkList.add(event);
-                        updateBookmarksFirestore();
+                        model.updateBookmarksFirestore(bookmarkList);
                     }
                     bookmarkImg.setImageResource(R.drawable.ic_marked);
                 }
@@ -150,24 +151,6 @@ public class EventDetailsFragment extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-
-    public void updateBookmarksFirestore(){
-        usersDoc
-                .update("bookmarks", bookmarkList)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("updateBookmarks", "DocumentSnapshot successfully updated!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("updateBookmarks", "Error updating document", e);
-                    }
-                });
     }
 
     private String formatDate(String eventDate){

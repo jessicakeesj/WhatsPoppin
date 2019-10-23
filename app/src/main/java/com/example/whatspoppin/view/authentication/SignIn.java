@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.authentication;
+package com.example.whatspoppin.view.authentication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,7 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.text.TextUtils;
 import android.widget.Toast;
-import com.example.whatspoppin.NavDrawer;
+import com.example.whatspoppin.view.NavDrawer;
 import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

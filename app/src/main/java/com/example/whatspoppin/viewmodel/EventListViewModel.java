@@ -1,24 +1,9 @@
-package com.example.whatspoppin.ui.bookmarks;
+package com.example.whatspoppin.viewmodel;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.ListFragment;
-
+import com.example.whatspoppin.adapter.EventAdapter;
 import com.example.whatspoppin.model.Event;
-import com.example.whatspoppin.R;
-import com.example.whatspoppin.adapter.BookmarkAdapter;
-import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,83 +15,46 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-public class BookmarksFragment extends ListFragment {
-    private ArrayList<Event> bookmarkArrayList = new ArrayList<Event>();
-    private ArrayList<Event> eventArrayList = new ArrayList<Event>();
-    private BookmarkAdapter bookmarkAdapter;
-    private ListView eventList;
-    private EditText search;
+public class EventListViewModel extends ViewModel {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private DocumentReference usersDoc;
     private FirebaseAuth mAuth;
+    private ArrayList<Event> events = new ArrayList<Event>();
+    private ArrayList<Event> bookmarks = new ArrayList<Event>();
+    private MutableLiveData<ArrayList<Event>> eventArrayList;
+    private MutableLiveData<ArrayList<Event>> bookmarkArrayList;
+    private DocumentReference usersDoc;
     private FirebaseUser currentUser;
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_bookmarks, container, false);
-        return root;
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        eventList = (ListView) view.findViewById(R.id.bookmarks_eventList);
-        search = (EditText) view.findViewById(R.id.bookmarks_inputSearch);
-
+    public EventListViewModel() {
+        // get current login user
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
+    }
 
-        getFireStoreData();
-        getBookmarksFirestore();
-        realtimeFireStoreData();
-
-        bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarkArrayList);
-        eventList.setAdapter(bookmarkAdapter);
-        bookmarkAdapter.notifyDataSetChanged();
-
-        eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
-                // open event details
-                try{
-                    Intent intent = new Intent(getContext(), EventDetailsFragment.class);
-                    Bundle args = new Bundle();
-                    args.putSerializable("EVENT", clickedEvent);
-                    args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
-                    intent.putExtra("BUNDLE", args);
-                    startActivity(intent);
-                }catch(Exception e ){
-                    Log.e("START ACTIVITY", e.getMessage());
-                }
-            }
-        });
-
-        search.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                BookmarksFragment.this.bookmarkAdapter.getFilter().filter(s);
-                eventList.setAdapter(bookmarkAdapter);
-                bookmarkAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
+    public LiveData<ArrayList<Event>> getEventList() {
+        if (eventArrayList == null) {
+            eventArrayList = new MutableLiveData<ArrayList<Event>>();
+            realtimeFireStoreData();
+        }
+        return eventArrayList;
+    }
+    public LiveData<ArrayList<Event>> getBookmarkList() {
+        if (bookmarkArrayList == null) {
+            bookmarkArrayList = new MutableLiveData<ArrayList<Event>>();
+            realtimeFireStoreData();
+        }
+        return bookmarkArrayList;
     }
 
     public void realtimeFireStoreData() {
@@ -118,25 +66,26 @@ public class BookmarksFragment extends ListFragment {
                     Log.w("Listen", "Listen failed.", e);
                     return;
                 }
-
                 if (snapshot != null && snapshot.exists()) {
-                    getFireStoreData();
-                    getBookmarksFirestore();
+                    getFireStoreEventsData();
+                    getFireStoreBookmarksData();
                 } else {
-                    getFireStoreData();
-                    getBookmarksFirestore();
+                    getFireStoreEventsData();
+                    getFireStoreBookmarksData();
                 }
             }
         });
     }
 
-    public void getFireStoreData() {
-        eventArrayList.clear();
+    private void getFireStoreEventsData() {
+        events.clear();
+        // get list of all events
+        final ArrayList<String> eventCategory = new ArrayList<>();
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    eventArrayList.clear();
+                    events.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         if (document != null) {
                             String name = document.getId();
@@ -154,12 +103,14 @@ public class BookmarksFragment extends ListFragment {
 
                             Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                     imageUrl, lng, lat, location_summary, source);
-                            eventArrayList.add(event);
+                            events.add(event);
                         } else {
-                            Log.d("saveToEventArrayList", "No such document");
+                            events = null;
+                            Log.d("", "No such document");
                         }
-                        Log.d("EventListFirestore", document.getId() + " => " + document.getData());
+                        Log.d("", document.getId() + " => " + document.getData());
                     }
+                    eventArrayList.setValue(events);
                 } else {
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
                 }
@@ -167,15 +118,15 @@ public class BookmarksFragment extends ListFragment {
         });
     }
 
-    public void getBookmarksFirestore(){
-        bookmarkArrayList.clear();
+    private void getFireStoreBookmarksData() {
+        bookmarks.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                        bookmarkArrayList.clear();
+                        bookmarks.clear();
                         String email = document.getString("userEmail");
                         String b = String.valueOf(document.get("bookmarks"));
                         if(b != "null" || b != null || b != "[]"){
@@ -196,22 +147,16 @@ public class BookmarksFragment extends ListFragment {
 
                                 Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                         imageUrl, lng, lat, location_summary, source);
-                                bookmarkArrayList.add(event);
+                                bookmarks.add(event);
                             }
                         }else{
-                            bookmarkArrayList = null;
+                            bookmarks = null;
                         }
-
-                        if(getActivity()!=null){
-                            bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarkArrayList);
-                            eventList.setAdapter(bookmarkAdapter);
-                            bookmarkAdapter.notifyDataSetChanged();
-                        }
-
                         Log.d("getBookmarks", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getBookmarks", "No such document");
                     }
+                    bookmarkArrayList.setValue(bookmarks);
                 } else {
                     Log.d("getBookmarks", "get failed with ", task.getException());
                 }
