@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.whatspoppin.Event;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.authentication.SignIn;
 import com.google.android.gms.tasks.OnFailureListener;

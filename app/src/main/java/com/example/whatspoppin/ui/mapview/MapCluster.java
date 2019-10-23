@@ -1,6 +1,6 @@
 package com.example.whatspoppin.ui.mapview;
 
-import com.example.whatspoppin.Event;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;

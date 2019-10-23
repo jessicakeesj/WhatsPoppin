@@ -16,8 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 
-import com.example.whatspoppin.Event;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
+import com.example.whatspoppin.adapter.EventAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
