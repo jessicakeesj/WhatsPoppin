@@ -1,10 +1,12 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.ProgressBar;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.example.whatspoppin.R;
+import com.example.whatspoppin.view.NavDrawer;
 import com.example.whatspoppin.view.authentication.SignIn;
 import com.google.firebase.auth.FirebaseAuth;
 
