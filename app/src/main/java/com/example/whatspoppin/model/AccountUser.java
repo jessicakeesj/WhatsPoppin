@@ -1,4 +1,4 @@
-package com.example.whatspoppin;
+package com.example.whatspoppin.model;
 
 import java.util.ArrayList;
 
@@ -56,7 +56,7 @@ public class AccountUser {
         this.interests = interests;
     }
 
-    public boolean getReceiveNotification() {
+    public boolean isReceiveNotification() {
         return receiveNotification;
     }
 

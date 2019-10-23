@@ -17,8 +17,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 
-import com.example.whatspoppin.Event;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
+import com.example.whatspoppin.adapter.BookmarkAdapter;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -74,26 +75,13 @@ public class BookmarksFragment extends ListFragment {
 
         eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView tv = (TextView) view.findViewById(R.id.text_eventName);
-                String[] eventName = tv.getText().toString().split("\n");
-
-                Event event = new Event();
-                for (Event e : bookmarkArrayList) {
-                    String evt = e.getEventName().trim();
-                    evt = evt.replaceAll("\\s+","");
-                    String sel = eventName[0].trim();
-                    sel = sel.replaceAll("\\s+","");
-                    if (evt.equalsIgnoreCase(sel)) {
-                        event = e;
-                        break;
-                    }
-                }
-
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+                // open event details
                 try{
                     Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                     Bundle args = new Bundle();
-                    args.putSerializable("EVENT", event);
+                    args.putSerializable("EVENT", clickedEvent);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                     intent.putExtra("BUNDLE", args);
                     startActivity(intent);

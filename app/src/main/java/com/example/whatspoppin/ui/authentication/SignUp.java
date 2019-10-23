@@ -8,20 +8,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.text.TextUtils;
 import android.widget.Toast;
-import com.example.whatspoppin.AccountUser;
-import com.example.whatspoppin.Event;
+import com.example.whatspoppin.model.AccountUser;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -93,10 +89,12 @@ public class SignUp extends AppCompatActivity {
         //check for valid email and password
         if(validateEmail(email) && password.length() >= 8 && password.length() <= 20){
             checkAuth = true;
-        }else if(!validateEmail(email)){
-            Toast.makeText(getApplicationContext(), "Registration Failed. Please enter a valid email address!", Toast.LENGTH_SHORT).show();
-        }else if(password.length() <= 8 && password.length() >= 20) {
-            Toast.makeText(getApplicationContext(), "Registration Failed. Password should be between 8 and 20 characters!", Toast.LENGTH_SHORT).show();
+        }else {
+            if(!validateEmail(email)){
+                Toast.makeText(getApplicationContext(), "Registration Failed. Please enter a valid email address!", Toast.LENGTH_SHORT).show();
+            }else if(password.length() < 8 || password.length() > 20) {
+                Toast.makeText(getApplicationContext(), "Registration Failed. Password should be between 8 and 20 characters!", Toast.LENGTH_SHORT).show();
+            }
         }
 
         //allow signup if email and password is valid

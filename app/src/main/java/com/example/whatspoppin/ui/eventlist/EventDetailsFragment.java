@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.whatspoppin.Event;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.authentication.SignIn;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -31,11 +31,9 @@ import java.util.Date;
 
 public class EventDetailsFragment extends AppCompatActivity {
 
-    private String eventName;
     private TextView eventNameTV, eventSummaryTV, eventDetails, eventSource;
     private ImageView eventImage, bookmarkImg;
     private Button linkBtn;
-    private ArrayList<Event> eventArrayList = new ArrayList<Event>();
     private Event event;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -76,7 +74,6 @@ public class EventDetailsFragment extends AppCompatActivity {
             }else{
                 Picasso.get().load("https://www." + event.getEventImageUrl()).into(eventImage);
             }
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }

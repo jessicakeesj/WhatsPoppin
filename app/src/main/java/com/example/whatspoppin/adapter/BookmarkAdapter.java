@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.bookmarks;
+package com.example.whatspoppin.adapter;
 
 import android.content.Context;
 import android.text.Html;
@@ -8,12 +8,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.whatspoppin.Event;
-import com.example.whatspoppin.ui.eventlist.EventAdapter;
+import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
-import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,8 +23,6 @@ public class BookmarkAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Event> bookmarksList = new ArrayList<Event>();
     private ArrayList<Event> filteredList = new ArrayList<Event>();
     private Context context;
-    private EventAdapter eventAdapter;
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private static LayoutInflater inflater = null;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -41,12 +40,32 @@ public class BookmarkAdapter extends BaseAdapter implements Filterable {
         Event event = filteredList.get(position);
         View v = convertView;
         if (convertView == null)v = inflater.inflate(R.layout.eventlist_item, null);
-
-        TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
+        TextView eventNameTV = v.findViewById(R.id.eventlistItem_eventName);
+        ImageView eventImage = v.findViewById(R.id.eventlistItem_image);
+        TextView categoryTV = v.findViewById(R.id.eventlistItem_category);
 
         String dateString = formatDate(event.getEvent_datetime_start());
-        String sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
-        eventName.setText(Html.fromHtml(sourceString));
+        String sourceString, eventName = event.getEventName(), categoryString;
+        if(eventName.length() > 50){
+            eventName = eventName.substring(0, Math.min(eventName.length(), 50)) + "...";
+        }
+        if(event.getEventLocationSummary() == null || event.getEventLocationSummary() == "null" || event.getEventLocationSummary() == ""){
+            sourceString = "<b>" + eventName + "</b> " + "<br>" + dateString;
+        }else{
+            sourceString = "<b>" + eventName + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
+        }
+        eventNameTV.setText(Html.fromHtml(sourceString));
+        try {
+            if (event.getEventImageUrl().contains("http")) {
+                Picasso.get().load(event.getEventImageUrl()).resize(eventImage.getWidth(), 0).into(eventImage);
+            } else {
+                Picasso.get().load("https://www." + event.getEventImageUrl()).resize(eventImage.getWidth(), 0).into(eventImage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        categoryString = "<b>" + "Category: " + "</b> " + event.getEventCategory();
+        categoryTV.setText(Html.fromHtml(categoryString));
         return v;
     }
 
