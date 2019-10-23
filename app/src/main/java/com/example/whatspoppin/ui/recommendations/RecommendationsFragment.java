@@ -1,6 +1,8 @@
 package com.example.whatspoppin.ui.recommendations;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,15 +14,25 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.ListFragment;
 
 import com.example.whatspoppin.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,10 +47,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 public class RecommendationsFragment extends ListFragment {
     private ArrayList<Event> rec_eventArrayList = new ArrayList<>();
     private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
     private ArrayList<String> preferenceArrayList = new ArrayList<>();
+    private boolean showNearbyEvent = false;
     private RecommendAdapter recommendAdapter;
     private ListView eventList;
     private EditText search;
@@ -46,6 +62,11 @@ public class RecommendationsFragment extends ListFragment {
     private FirebaseAuth mAuth;
     private DocumentReference usersDoc;
     private FirebaseUser currentUser;
+    private double userLat = 1.3521;
+    private double userLng = 103.8198;
+
+    private Marker userMarker;
+    private FusedLocationProviderClient fusedLocationClient;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -58,6 +79,26 @@ public class RecommendationsFragment extends ListFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         eventList = (ListView) view.findViewById(R.id.rec_eventList);
         search = (EditText) view.findViewById(R.id.rec_inputSearch);
+
+        // check location permission
+        if (ActivityCompat.checkSelfPermission(getContext(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION}, 1);
+        }
+        // get location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            userLat = location.getLatitude();
+                            userLng = location.getLongitude();
+                        } else {
+                            displayToast("Location not enabled.");
+                        }
+                    }
+                });
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -85,23 +126,23 @@ public class RecommendationsFragment extends ListFragment {
                 Event event = new Event();
                 for (Event e : rec_eventArrayList) {
                     String evt = e.getEventName().trim();
-                    evt = evt.replaceAll("\\s+","");
+                    evt = evt.replaceAll("\\s+", "");
                     String sel = eventName[0].trim();
-                    sel = sel.replaceAll("\\s+","");
+                    sel = sel.replaceAll("\\s+", "");
                     if (evt.equalsIgnoreCase(sel)) {
                         event = e;
                         break;
                     }
                 }
 
-                try{
+                try {
                     Intent intent = new Intent(getContext(), EventDetailsFragment.class);
                     Bundle args = new Bundle();
                     args.putSerializable("EVENT", event);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
                     intent.putExtra("BUNDLE", args);
                     startActivity(intent);
-                }catch(Exception e ){
+                } catch (Exception e) {
                     Log.e("START ACTIVITY", e.getMessage());
                 }
             }
@@ -170,7 +211,12 @@ public class RecommendationsFragment extends ListFragment {
                             String location_summary = document.getString("location_summary");
                             String source = document.getString("source");
 
-                            if (preferenceArrayList.contains(category)) {
+                            Double doubleLat = Double.parseDouble(lat);
+                            Double doubleLng = Double.parseDouble(lng);
+                            if (preferenceArrayList.contains(category) || (showNearbyEvent) &&
+                                    (doubleLat >= userLat - 0.005 && doubleLat <= userLat + 0.005) &&
+                                    (doubleLng >= userLng - 0.005 && doubleLng <= userLng + 0.005)
+                            ) {
                                 Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                         imageUrl, lng, lat, location_summary, source);
                                 rec_eventArrayList.add(event);
@@ -256,6 +302,7 @@ public class RecommendationsFragment extends ListFragment {
                         } else {
                             preferenceArrayList = null;
                         }
+                        showNearbyEvent = (boolean) document.get("showNearbyEvents");
                         Log.d("getPreferences", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("getPreferences", "No such document");
@@ -265,5 +312,9 @@ public class RecommendationsFragment extends ListFragment {
                 }
             }
         });
+    }
+
+    public void displayToast(String msg) {
+        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 }
