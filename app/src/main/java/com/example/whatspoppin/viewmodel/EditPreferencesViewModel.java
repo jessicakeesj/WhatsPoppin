@@ -1,10 +1,12 @@
-package com.example.whatspoppin.view.editpreferences;
+package com.example.whatspoppin.viewmodel;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -23,66 +25,40 @@ public class EditPreferencesViewModel extends ViewModel {
 
     //firebase
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private FirebaseAuth mAuth;
     private DocumentReference usersDoc;
 
-    private MutableLiveData<ArrayList<String>> eventCategories;
-    private ArrayList<String> categoriesSelected;
-    private boolean receiveNotification = false;
-    private boolean showNearbyEvents = false;
+    private MutableLiveData<ArrayList<String>> eventCategories = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<String>> categoriesSelected = new MutableLiveData<>();
+    private MutableLiveData<Boolean> receiveNotification = new MutableLiveData<>();
+    private MutableLiveData<Boolean> showNearbyEvents = new MutableLiveData<>();
 
     public EditPreferencesViewModel() {
         // get current login user
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null)
             usersDoc = db.collection("users").document(currentUser.getUid());
-        }
         getFireStoreEventsData();
         getFireStoreUserData();
     }
 
     public LiveData<ArrayList<String>> getEventCategories() {
-        if (eventCategories == null) {
-            eventCategories = new MutableLiveData<ArrayList<String>>();
-            getFireStoreEventsData();
-        }
         return eventCategories;
     }
 
-    public ArrayList<String> getSelectedCategories() {
-        if (categoriesSelected == null) {
-            categoriesSelected = new ArrayList<String>();
-            getFireStoreUserData();
-        }
+    public LiveData<ArrayList<String>> getSelectedCategories() {
         return categoriesSelected;
     }
 
-    public void unselectCategory(String categoryName) {
-        categoriesSelected.remove(categoryName);
-    }
-
-    public void selectCategory(String categoryName) {
-        categoriesSelected.add(categoryName);
-    }
-
-    public void setReceiveNotification(boolean value) {
-        receiveNotification = value;
-    }
-
-    public void setShowNearbyEvents(boolean value) {
-        showNearbyEvents = value;
-    }
-
-    public boolean getReceiveNotification() {
+    public LiveData<Boolean> getReceiveNotification() {
         return receiveNotification;
     }
 
-    public boolean getShowNearbyEvents() {
+    public LiveData<Boolean> getShowNearbyEvents() {
         return showNearbyEvents;
     }
 
     private void getFireStoreUserData() { // get user preferences settings
+        final ArrayList<String> selectedCategories = new ArrayList<>();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -94,11 +70,11 @@ public class EditPreferencesViewModel extends ViewModel {
                         if (b != "null" || b != null || b != "[]") {
                             ArrayList<String> bkm = (ArrayList<String>) document.get("interests");
                             for (String categoryName : bkm)
-                                categoriesSelected.add(categoryName);
-                        } else categoriesSelected = null;
-                        receiveNotification = document.getBoolean("receiveNotification");
-                        showNearbyEvents = document.getBoolean("showNearbyEvents");
-
+                                selectedCategories.add(categoryName);
+                        }
+                        categoriesSelected.setValue(selectedCategories);
+                        receiveNotification.setValue((boolean) document.getBoolean("receiveNotification"));
+                        showNearbyEvents.setValue((boolean) document.getBoolean("showNearbyEvents"));
                     } else
                         Log.d("getUserDetails", "No such document");
                 } else
@@ -117,23 +93,20 @@ public class EditPreferencesViewModel extends ViewModel {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         if (document != null) {
                             String category = document.getString("category");
-                            if (!eventCategory.contains(category)) {
-                                eventCategory.add(category);
-                            }
-                        } else {
+                            if (!eventCategory.contains(category)) eventCategory.add(category);
+                        } else
                             Log.d("", "No such document");
-                        }
                         Log.d("", document.getId() + " => " + document.getData());
                     }
                     eventCategories.setValue(eventCategory);
-                } else {
+                } else
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
-                }
             }
         });
     }
 
-    public void updateCategoryFirestore(ArrayList<String> categories_Selected) {
+    public void updateCategoryFireStore(ArrayList<String> categories_Selected) {
+        categoriesSelected.setValue(categories_Selected);
         usersDoc.update("interests", categories_Selected)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -149,8 +122,9 @@ public class EditPreferencesViewModel extends ViewModel {
                 });
     }
 
-    public void updateReceiveNotificationFirestore(boolean receiveNotification) {
-        usersDoc.update("receiveNotification", receiveNotification)
+    public void updateReceiveNotificationFireStore(boolean value) {
+        receiveNotification.setValue(value);
+        usersDoc.update("receiveNotification", receiveNotification.getValue())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -165,8 +139,9 @@ public class EditPreferencesViewModel extends ViewModel {
                 });
     }
 
-    public void updateShowNearbyEventFirestore(boolean showNearbyEvents) {
-        usersDoc.update("showNearbyEvents", showNearbyEvents)
+    public void updateShowNearbyEventFireStore(boolean value) {
+        showNearbyEvents.setValue(value);
+        usersDoc.update("showNearbyEvents", showNearbyEvents.getValue())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -180,4 +155,25 @@ public class EditPreferencesViewModel extends ViewModel {
                     }
                 });
     }
+
+//    checks firestore for realtime updates
+//    public void realtimeFireStoreData() {
+//        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot,
+//                                @Nullable FirebaseFirestoreException e) {
+//                if (e != null) {
+//                    Log.w("Listen", "Listen failed.", e);
+//                    return;
+//                }
+//                if (snapshot != null && snapshot.exists()) {
+//                    getEventCategories();
+//                    getPreferenceFirestore();
+//                } else {
+//                    getEventCategories();
+//                    getPreferenceFirestore();
+//                }
+//            }
+//        });
+//    }
 }
