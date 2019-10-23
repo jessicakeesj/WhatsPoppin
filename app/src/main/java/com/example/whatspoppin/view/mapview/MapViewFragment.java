@@ -67,7 +67,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GoogleMap mMap;
     private DocumentReference usersDoc;
-    private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private ClusterManager<MapCluster> mClusterManager;
     private double userLat = 1.3521;
@@ -94,15 +93,16 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            usersDoc = db.collection("users").document(currentUser.getUid());
-        }
-        getFireStoreEvents();
-//        realtimeFireStoreData();
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
+
+        // firebase user
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null)
+            usersDoc = db.collection("users").document(currentUser.getUid());
+
+        getFireStoreEvents();
+//        realtimeFireStoreData();
 
         // get location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -121,9 +121,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.mm_position)));
                             } else
                                 userMarker.setPosition(position);
-                        } else {
+                        } else
                             displayToast("Location not enabled.");
-                        }
                     }
                 });
 
@@ -173,12 +172,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     Log.w("Listen", "Listen failed.", e);
                     return;
                 }
-                if (snapshot != null && snapshot.exists()) {
-//                    Log.d("SNAPSHOT", snapshot.toString());
+                if (snapshot != null && snapshot.exists())
                     getFireStoreEvents();
-                } else {
+                else
                     getFireStoreEvents();
-                }
             }
         });
     }
@@ -209,15 +206,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                             Event event = new Event(name, address, category, description, datetime_start,
                                     datetime_end, url, imageUrl, lng, lat, location_summary, source);
                             eventArrayList.add(event);
-                        } else {
+                        } else
                             Log.d("saveToEventArrayList", "No such document");
-                        }
-//                        Log.d("EventListFirestore", document.getId() + " => " + document.getData());
                     }
                     getFireStoreUser();
-                } else {
+                } else
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
-                }
             }
         });
     }
@@ -240,9 +234,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         String b = String.valueOf(document.get("bookmarks"));
                         if (b != "null" || b != null || b != "[]") {
                             ArrayList<HashMap<String, String>> bkm = (ArrayList<HashMap<String, String>>) document.get("bookmarks");
-                            for (HashMap<String, String> testMap : bkm) {
-                                userBookmarks.add(testMap.get("eventName"));
-                            }
+                            for (HashMap<String, String> bevent : bkm)
+                                userBookmarks.add(bevent.get("eventName"));
+
                         }
                         // get preferences list
                         userPreferences.addAll((ArrayList<String>) document.get("interests"));
@@ -250,14 +244,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
                         // add markers
                         createEventsMapMarkers();
-
-//                        Log.d("getUserDetails", "DocumentSnapshot data: " + document.getData());
-                    } else {
+                    } else
                         Log.d("getUserDetails", "No such document");
-                    }
-                } else {
+                } else
                     Log.d("getUserDetails", "get failed with ", task.getException());
-                }
             }
         });
     }
