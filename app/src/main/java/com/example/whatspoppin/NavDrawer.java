@@ -106,7 +106,7 @@ public class NavDrawer extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // handle arrow click here
+        // handle logout click here
         if (item.getItemId() == R.id.logout){
             FirebaseAuth.getInstance().signOut();
 

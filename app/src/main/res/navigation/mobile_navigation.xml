@@ -34,10 +34,4 @@
         android:name="com.example.whatspoppin.ui.editpreferences.EditPreferencesFragment"
         android:label="@string/menu_editPreferences"
         tools:layout="@layout/fragment_editpreferences" />
-
-    <fragment
-        android:id="@+id/nav_send"
-        android:name="com.example.whatspoppin.ui.send.SendFragment"
-        android:label="@string/menu_send"
-        tools:layout="@layout/fragment_send" />
 </navigation>
