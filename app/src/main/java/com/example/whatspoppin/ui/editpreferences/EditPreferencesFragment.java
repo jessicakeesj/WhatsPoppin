@@ -36,11 +36,13 @@ import java.util.ArrayList;
 
 public class EditPreferencesFragment extends Fragment {
 
-    private ArrayList<String> eventCategories = new ArrayList<>();
     private ArrayList<String> categories_Selected = new ArrayList<>();
-    private ChipGroup preferenceCG;
     private boolean receiveNotification = false;
     private boolean showNearbyEvents = false;
+
+    private EditPreferencesViewModel editPreferencesViewModel;
+
+    private ChipGroup preferenceCG;
     private Switch notificationSwitch, locationSwitch;
 
     //firebase
@@ -48,14 +50,12 @@ public class EditPreferencesFragment extends Fragment {
     private FirebaseAuth mAuth;
     private DocumentReference usersDoc;
 
-    private EditPreferencesViewModel editPreferencesViewModel;
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         editPreferencesViewModel = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
         View root = inflater.inflate(R.layout.fragment_editpreferences, container, false);
 
-        EditPreferencesViewModel model = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
+        final EditPreferencesViewModel model = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
 
         // get current login user
         mAuth = FirebaseAuth.getInstance();
@@ -101,6 +101,9 @@ public class EditPreferencesFragment extends Fragment {
             }
         });
 
+        // Set Selected Category Chips
+//        model.getSelectedCategories().;
+
         // notification toggle
         if (receiveNotification) notificationSwitch.setChecked(true);
         else notificationSwitch.setChecked(false);
@@ -114,7 +117,7 @@ public class EditPreferencesFragment extends Fragment {
                     notificationSwitch.setChecked(true);
                     receiveNotification = true;
                 }
-                updatePreferenceFirestore();
+                model.updateReceiveNotificationFirestore(receiveNotification);
             }
         });
 
@@ -131,7 +134,7 @@ public class EditPreferencesFragment extends Fragment {
                     locationSwitch.setChecked(true);
                     showNearbyEvents = true;
                 }
-                updatePreferenceFirestore();
+                model.updateShowNearbyEventFirestore(showNearbyEvents);
             }
         });
 
@@ -179,31 +182,6 @@ public class EditPreferencesFragment extends Fragment {
 //        });
 //    }
 
-//    public void getEventCategories() {
-//        eventCategories.clear();
-//        db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                if (task.isSuccessful()) {
-//                    eventCategories.clear();
-//                    for (QueryDocumentSnapshot document : task.getResult()) {
-//                        if (document != null) {
-//                            String category = document.getString("category");
-//                            if (!eventCategories.contains(category)) {
-//                                eventCategories.add(category);
-//                            }
-//                        } else {
-//                            Log.d("", "No such document");
-//                        }
-//                        Log.d("", document.getId() + " => " + document.getData());
-//                    }
-//                    getPreferenceFirestore();
-//                } else {
-//                    Log.w("", "Error getting documents.", task.getException());
-//                }
-//            }
-//        });
-//    }
 
     public void updatePreferenceFirestore() {
         usersDoc.update("interests", categories_Selected)
@@ -273,7 +251,7 @@ public class EditPreferencesFragment extends Fragment {
                     } else {
                         Log.d("getPreferences", "No such document");
                     }
-                    setupView();
+//                    setupView();
                 } else {
                     Log.d("getPreferences", "get failed with ", task.getException());
                 }
