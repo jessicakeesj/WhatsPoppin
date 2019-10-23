@@ -1,9 +1,11 @@
 package com.example.whatspoppin;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -30,6 +32,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class NavDrawer extends AppCompatActivity {
 
@@ -106,14 +109,35 @@ public class NavDrawer extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // handle arrow click here
+        // handle logout click here
         if (item.getItemId() == R.id.logout){
-            FirebaseAuth.getInstance().signOut();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(true);
+            builder.setTitle("Continue with Logout?");
+            builder.setMessage("");
+            builder.setPositiveButton("Continue",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mAuth.signOut();
+                            Toast.makeText(getApplicationContext(), "Logging out", Toast.LENGTH_LONG).show();
 
-            // Launching the login activity
-            Intent intent = new Intent(getApplication(), SignIn.class);
-            startActivity(intent);
-            finish();
+                            if(mAuth.getCurrentUser() == null){
+                                // Launching the login activity
+                                Intent intent = new Intent(getApplication(), SignIn.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+                    });
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
         return super.onOptionsItemSelected(item);
     }

@@ -1,11 +1,15 @@
 package com.example.whatspoppin;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.ProgressBar;
 import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.whatspoppin.ui.authentication.SignIn;
+import com.example.whatspoppin.ui.authentication.SignUp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Splashscreen extends AppCompatActivity {
     private ProgressBar progressBar;
@@ -24,9 +28,17 @@ public class Splashscreen extends AppCompatActivity {
                         sleep(200); //run for 2 secs then sleep
                         progressBar.setProgress(progress);
                     }
-                    Intent intent = new Intent(getApplicationContext(), SignIn.class); //to direct it to this activity after the splash screen finishes
+                    FirebaseAuth auth = FirebaseAuth.getInstance();
+                    Intent intent;
+                    if (auth.getCurrentUser() != null) { // user is logged in
+                        intent = new Intent(getApplicationContext(), NavDrawer.class);
+                    }else{ // user not logged in
+                        intent = new Intent(getApplicationContext(), SignIn.class);
+                    }
+                    //to direct it to this activity after the splash screen finishes
                     startActivity(intent);
                     finish(); //to stop it from rerunning
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
