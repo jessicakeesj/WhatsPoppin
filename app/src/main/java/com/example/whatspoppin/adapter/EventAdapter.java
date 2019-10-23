@@ -41,7 +41,7 @@ public class EventAdapter extends BaseAdapter implements Filterable {
         TextView eventName = (TextView) v.findViewById(R.id.text_eventName);
         String dateString = formatDate(event.getEvent_datetime_start());
         String sourceString;
-        if(event.getEventLocationSummary() == null || event.getEventLocationSummary() == "null"){
+        if(event.getEventLocationSummary() == null || event.getEventLocationSummary() == "null" || event.getEventLocationSummary() == ""){
             sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString;
         }else{
             sourceString = "<b>" + event.getEventName() + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
