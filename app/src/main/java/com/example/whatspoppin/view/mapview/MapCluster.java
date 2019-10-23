@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.mapview;
+package com.example.whatspoppin.view.mapview;
 
 import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;

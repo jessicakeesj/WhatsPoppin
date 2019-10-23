@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.authentication;
+package com.example.whatspoppin.view.authentication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

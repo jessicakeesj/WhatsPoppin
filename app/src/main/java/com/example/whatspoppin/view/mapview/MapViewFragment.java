@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.mapview;
+package com.example.whatspoppin.view.mapview;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
-import com.example.whatspoppin.ui.eventlist.EventDetailsFragment;
+import com.example.whatspoppin.view.eventlist.EventDetailsFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;

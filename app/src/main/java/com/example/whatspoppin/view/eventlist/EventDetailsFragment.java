@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.eventlist;
+package com.example.whatspoppin.view.eventlist;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
-import com.example.whatspoppin.ui.authentication.SignIn;
+import com.example.whatspoppin.view.authentication.SignIn;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;

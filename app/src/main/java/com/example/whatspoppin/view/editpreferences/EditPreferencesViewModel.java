@@ -1,4 +1,4 @@
-package com.example.whatspoppin.ui.editpreferences;
+package com.example.whatspoppin.view.editpreferences;
 
 import android.util.Log;
 
