@@ -155,25 +155,4 @@ public class EditPreferencesViewModel extends ViewModel {
                     }
                 });
     }
-
-//    checks firestore for realtime updates
-//    public void realtimeFireStoreData() {
-//        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//            @Override
-//            public void onEvent(@Nullable DocumentSnapshot snapshot,
-//                                @Nullable FirebaseFirestoreException e) {
-//                if (e != null) {
-//                    Log.w("Listen", "Listen failed.", e);
-//                    return;
-//                }
-//                if (snapshot != null && snapshot.exists()) {
-//                    getEventCategories();
-//                    getPreferenceFirestore();
-//                } else {
-//                    getEventCategories();
-//                    getPreferenceFirestore();
-//                }
-//            }
-//        });
-//    }
 }

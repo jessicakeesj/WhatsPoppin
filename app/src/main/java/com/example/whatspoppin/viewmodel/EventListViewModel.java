@@ -1,8 +1,6 @@
 package com.example.whatspoppin.viewmodel;
 
 import android.util.Log;
-import android.widget.ListView;
-import com.example.whatspoppin.adapter.EventAdapter;
 import com.example.whatspoppin.model.Event;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -24,12 +22,19 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 public class EventListViewModel extends ViewModel {
+
+    private MutableLiveData<ArrayList<Event>> eventArrayList = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<Event>> fil_eventArrayList = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<Event>> bookmarkArrayList = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<String>> eventCategories = new MutableLiveData<>();
+
+    private ArrayList<Event> events = new ArrayList<>();
+    private ArrayList<Event> fil_events = new ArrayList<>();
+    private ArrayList<Event> bookmarks = new ArrayList<>();
+    private ArrayList<String> eventCategory = new ArrayList<>();
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
-    private ArrayList<Event> events = new ArrayList<Event>();
-    private ArrayList<Event> bookmarks = new ArrayList<Event>();
-    private MutableLiveData<ArrayList<Event>> eventArrayList;
-    private MutableLiveData<ArrayList<Event>> bookmarkArrayList;
     private DocumentReference usersDoc;
     private FirebaseUser currentUser;
 
@@ -43,18 +48,23 @@ public class EventListViewModel extends ViewModel {
     }
 
     public LiveData<ArrayList<Event>> getEventList() {
-        if (eventArrayList == null) {
-            eventArrayList = new MutableLiveData<ArrayList<Event>>();
-            realtimeFireStoreData();
-        }
+        realtimeFireStoreData();
         return eventArrayList;
     }
+
+    public LiveData<ArrayList<Event>> getFilteredEventList(ArrayList<String> selectedCategories) {
+        getFireStoreFilteredEventsData(selectedCategories);
+        return fil_eventArrayList;
+    }
+
     public LiveData<ArrayList<Event>> getBookmarkList() {
-        if (bookmarkArrayList == null) {
-            bookmarkArrayList = new MutableLiveData<ArrayList<Event>>();
-            realtimeFireStoreData();
-        }
+        realtimeFireStoreData();
         return bookmarkArrayList;
+    }
+
+    public LiveData<ArrayList<String>> getEventCategories() {
+        realtimeFireStoreData();
+        return eventCategories;
     }
 
     public void realtimeFireStoreData() {
@@ -69,12 +79,25 @@ public class EventListViewModel extends ViewModel {
                 if (snapshot != null && snapshot.exists()) {
                     getFireStoreEventsData();
                     getFireStoreBookmarksData();
+                    getFireStoreCategoryData();
                 } else {
                     getFireStoreEventsData();
                     getFireStoreBookmarksData();
+                    getFireStoreCategoryData();
                 }
             }
         });
+    }
+
+    private void getFireStoreFilteredEventsData(ArrayList<String> category) {
+        fil_events.clear();
+        final ArrayList<String> selectedCategories = category;
+        for(Event e : eventArrayList.getValue()){
+            if (selectedCategories.contains(e.getEventCategory())){
+                fil_events.add(e);
+            }
+        }
+        fil_eventArrayList.setValue(fil_events);
     }
 
     private void getFireStoreEventsData() {
@@ -160,6 +183,27 @@ public class EventListViewModel extends ViewModel {
                 } else {
                     Log.d("getBookmarks", "get failed with ", task.getException());
                 }
+            }
+        });
+    }
+
+    private void getFireStoreCategoryData() {
+        // get list of all events
+        db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document != null) {
+                            String category = document.getString("category");
+                            if (!eventCategory.contains(category)) eventCategory.add(category);
+                        } else
+                            Log.d("", "No such document");
+                        Log.d("", document.getId() + " => " + document.getData());
+                    }
+                    eventCategories.setValue(eventCategory);
+                } else
+                    Log.w("EventListFirestore", "Error getting documents.", task.getException());
             }
         });
     }

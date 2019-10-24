@@ -13,6 +13,21 @@
         android:drawableStart="@drawable/ic_search_foreground"
         android:drawablePadding="0dp"/>
 
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foregroundGravity="right"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/allEvent_chipgroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"></com.google.android.material.chip.ChipGroup>
+
+    </HorizontalScrollView>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="fill_parent"

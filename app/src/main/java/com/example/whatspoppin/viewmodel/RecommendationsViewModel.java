@@ -22,13 +22,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RecommendationsViewModel extends ViewModel {
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private FirebaseAuth mAuth;
+    private MutableLiveData<ArrayList<Event>> rec_eventArrayList = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<Event>> bookmarkArrayList = new MutableLiveData<>();
+
     private ArrayList<Event> rec_events = new ArrayList<Event>();
     private ArrayList<String> preferences = new ArrayList<>();
     private ArrayList<Event> bookmarks = new ArrayList<Event>();
-    private MutableLiveData<ArrayList<Event>> rec_eventArrayList;
-    private MutableLiveData<ArrayList<Event>> bookmarkArrayList;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth mAuth;
     private DocumentReference usersDoc;
     private FirebaseUser currentUser;
 
@@ -42,18 +44,12 @@ public class RecommendationsViewModel extends ViewModel {
     }
 
     public LiveData<ArrayList<Event>> getBookmarkList() {
-        if (bookmarkArrayList == null) {
-            bookmarkArrayList = new MutableLiveData<ArrayList<Event>>();
-            realtimeFireStoreData();
-        }
+        realtimeFireStoreData();
         return bookmarkArrayList;
     }
 
     public LiveData<ArrayList<Event>> getRecommendationList() {
-        if (rec_eventArrayList == null) {
-            rec_eventArrayList = new MutableLiveData<ArrayList<Event>>();
-            realtimeFireStoreData();
-        }
+        realtimeFireStoreData();
         return rec_eventArrayList;
     }
 

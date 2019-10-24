@@ -25,8 +25,8 @@ public class BookmarksViewModel extends ViewModel {
     private FirebaseAuth mAuth;
     private ArrayList<Event> events = new ArrayList<Event>();
     private ArrayList<Event> bookmarks = new ArrayList<Event>();
-    private MutableLiveData<ArrayList<Event>> eventArrayList;
-    private MutableLiveData<ArrayList<Event>> bookmarkArrayList;
+    private MutableLiveData<ArrayList<Event>> eventArrayList = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<Event>> bookmarkArrayList = new MutableLiveData<>();
     private DocumentReference usersDoc;
     private FirebaseUser currentUser;
 
@@ -40,17 +40,11 @@ public class BookmarksViewModel extends ViewModel {
     }
 
     public LiveData<ArrayList<Event>> getEventList() {
-        if (eventArrayList == null) {
-            eventArrayList = new MutableLiveData<ArrayList<Event>>();
-            realtimeFireStoreData();
-        }
+        realtimeFireStoreData();
         return eventArrayList;
     }
     public LiveData<ArrayList<Event>> getBookmarkList() {
-        if (bookmarkArrayList == null) {
-            bookmarkArrayList = new MutableLiveData<ArrayList<Event>>();
-            realtimeFireStoreData();
-        }
+        realtimeFireStoreData();
         return bookmarkArrayList;
     }
 
