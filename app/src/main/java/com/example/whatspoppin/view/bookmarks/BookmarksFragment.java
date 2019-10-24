@@ -18,7 +18,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.adapter.BookmarkAdapter;
 import com.example.whatspoppin.model.Event;
-import com.example.whatspoppin.view.eventlist.EventDetails;
+import com.example.whatspoppin.view.eventlist.EventDetailsActivity;
 import com.example.whatspoppin.viewmodel.BookmarksViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -76,7 +76,7 @@ public class BookmarksFragment extends ListFragment {
                 Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
                 // open event details
                 try{
-                    Intent intent = new Intent(getContext(), EventDetails.class);
+                    Intent intent = new Intent(getContext(), EventDetailsActivity.class);
                     Bundle args = new Bundle();
                     args.putSerializable("EVENT", clickedEvent);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);

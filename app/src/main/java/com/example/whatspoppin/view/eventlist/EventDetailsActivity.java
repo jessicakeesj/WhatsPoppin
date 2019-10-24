@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class EventDetails extends AppCompatActivity {
+public class EventDetailsActivity extends AppCompatActivity {
 
     private TextView eventNameTV, eventSummaryTV, eventDetails, eventSource;
     private ImageView eventImage, bookmarkImg;

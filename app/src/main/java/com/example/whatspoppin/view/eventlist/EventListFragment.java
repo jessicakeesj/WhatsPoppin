@@ -137,7 +137,7 @@ public class EventListFragment extends ListFragment {
                 Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
                 // open event details
                 try{
-                    Intent intent = new Intent(getContext(), EventDetails.class);
+                    Intent intent = new Intent(getContext(), EventDetailsActivity.class);
                     Bundle args = new Bundle();
                     args.putSerializable("EVENT", clickedEvent);
                     args.putSerializable("BOOKMARKLIST", bookmarkArrayList);

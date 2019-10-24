@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
-import com.example.whatspoppin.view.eventlist.EventDetails;
+import com.example.whatspoppin.view.eventlist.EventDetailsActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -340,7 +340,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<MapCluster>() {
             @Override
             public void onClusterItemInfoWindowClick(MapCluster mapCluster) {
-                Intent intent = new Intent(getContext(), EventDetails.class);
+                Intent intent = new Intent(getContext(), EventDetailsActivity.class);
                 Bundle args = new Bundle();
                 args.putSerializable("EVENT", mapCluster.getEvent());
                 args.putSerializable("BOOKMARKLIST", bookmarkArrayList);
