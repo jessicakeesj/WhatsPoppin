@@ -82,8 +82,12 @@ public class EventDetailsActivity extends AppCompatActivity {
         eventNameTV.setText(event.getEventName().trim());
         String startDate = formatDate(event.getEvent_datetime_start());
         String endDate = formatDate(event.getEvent_datetime_end());
-
-        String detailsString = "<b> Event Details: </b>" + "<br>" + startDate + " - " + endDate + "<br>" + event.getEventAddress();
+        String detailsString;
+        if (event.getEventAddress() == null &&  event.getEventAddress() == "null"){
+            detailsString = "<b> Event Details: </b>" + "<br>" + startDate + " - " + endDate;
+        }else{
+            detailsString = "<b> Event Details: </b>" + "<br>" + startDate + " - " + endDate + "<br>" + event.getEventAddress();
+        }
         eventDetails.setText(Html.fromHtml(detailsString));
         eventSummaryTV.setText(event.getEventDescription());
         eventSource.setText("Source: " + event.getEventSource());
