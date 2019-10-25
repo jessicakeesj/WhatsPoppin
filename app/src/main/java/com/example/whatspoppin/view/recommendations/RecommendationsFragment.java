@@ -57,7 +57,7 @@ public class RecommendationsFragment extends ListFragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         recommendationsViewModel = ViewModelProviders.of(this).get(RecommendationsViewModel.class);
-        RecommendationsViewModel model = ViewModelProviders.of(this).get(RecommendationsViewModel.class);
+        final RecommendationsViewModel model = ViewModelProviders.of(this).get(RecommendationsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_recommendations, container, false);
 
         // check location permission
@@ -74,9 +74,9 @@ public class RecommendationsFragment extends ListFragment {
                         if (location != null) {
                             userLat = location.getLatitude();
                             userLng = location.getLongitude();
-                        } else {
+                            model.setUserLngLat(userLng, userLat);
+                        } else
                             displayToast("Location not enabled.");
-                        }
                     }
                 });
 
@@ -89,7 +89,9 @@ public class RecommendationsFragment extends ListFragment {
         eventList = (ListView) root.findViewById(android.R.id.list);
         search = (EditText) root.findViewById(R.id.rec_inputSearch);
 
-        model.getRecommendationList(userLat, userLng).observe(this, new Observer<ArrayList<Event>>() {
+
+
+        model.getRecommendationList().observe(this, new Observer<ArrayList<Event>>() {
             @Override
             public void onChanged(ArrayList<Event> recommendations) {
                 recommendAdapter = new RecommendAdapter(getActivity(), recommendations);
@@ -98,7 +100,7 @@ public class RecommendationsFragment extends ListFragment {
             }
         });
 
-        model.getBookmarkList(userLat, userLng).observe(this, new Observer<ArrayList<Event>>() {
+        model.getBookmarkList().observe(this, new Observer<ArrayList<Event>>() {
             @Override
             public void onChanged(ArrayList<Event> bookmarks) {
                 bookmarkArrayList = bookmarks;

@@ -33,6 +33,8 @@ public class RecommendationsViewModel extends ViewModel {
     private ArrayList<Event> bookmarks = new ArrayList<Event>();
 
     private boolean showNearbyEvent = false;
+    private MutableLiveData<Double> userLat = new MutableLiveData<>();
+    private MutableLiveData<Double> userLng = new MutableLiveData<>();
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
@@ -40,6 +42,8 @@ public class RecommendationsViewModel extends ViewModel {
     private FirebaseUser currentUser;
 
     public RecommendationsViewModel() {
+        userLat.setValue(1.3521);
+        userLng.setValue(103.8198);
         // get current login user
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -47,17 +51,23 @@ public class RecommendationsViewModel extends ViewModel {
             usersDoc = db.collection("users").document(currentUser.getUid());
     }
 
-    public LiveData<ArrayList<Event>> getBookmarkList(double userLat, double userLng) {
-        realtimeFireStoreData(userLat, userLng);
+    public LiveData<ArrayList<Event>> getBookmarkList() {
+        realtimeFireStoreData();
         return bookmarkArrayList;
     }
 
-    public LiveData<ArrayList<Event>> getRecommendationList(double userLat, double userLng) {
-        realtimeFireStoreData(userLat, userLng);
+    public LiveData<ArrayList<Event>> getRecommendationList() {
+        realtimeFireStoreData();
         return rec_eventArrayList;
     }
 
-    public void realtimeFireStoreData(final double userLat, final double userLng) {
+    public void setUserLngLat(double lng, double lat) {
+        userLng.setValue(lng);
+        userLat.setValue(lat);
+        getFireStorePreferenceData();
+    }
+
+    public void realtimeFireStoreData() {
         usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
@@ -67,17 +77,17 @@ public class RecommendationsViewModel extends ViewModel {
                     return;
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    getFireStorePreferenceData(userLat, userLng);
+                    getFireStorePreferenceData();
                     getFireStoreBookmarksData();
                 } else {
-                    getFireStorePreferenceData(userLat, userLng);
+                    getFireStorePreferenceData();
                     getFireStoreBookmarksData();
                 }
             }
         });
     }
 
-    private void getRecommendationData(final double userLat, final double userLng) {
+    private void getRecommendationData() {
         rec_events.clear();
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -103,8 +113,8 @@ public class RecommendationsViewModel extends ViewModel {
                             Double doubleLat = Double.parseDouble(lat);
                             Double doubleLng = Double.parseDouble(lng);
                             if (preferences.contains(category) || ((showNearbyEvent) &&
-                                    (doubleLat >= userLat - 0.005 && doubleLat <= userLat + 0.005) &&
-                                    (doubleLng >= userLng - 0.005 && doubleLng <= userLng + 0.005))) {
+                                    (doubleLat >= userLat.getValue() - 0.003 && doubleLat <= userLat.getValue() + 0.003) &&
+                                    (doubleLng >= userLng.getValue() - 0.003 && doubleLng <= userLng.getValue() + 0.003))) {
                                 Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                         imageUrl, lng, lat, location_summary, source);
                                 rec_events.add(event);
@@ -122,7 +132,7 @@ public class RecommendationsViewModel extends ViewModel {
         });
     }
 
-    private void getFireStorePreferenceData(final double userLat, final double userLng) {
+    private void getFireStorePreferenceData() {
         preferences.clear();
         usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -141,7 +151,7 @@ public class RecommendationsViewModel extends ViewModel {
                         showNearbyEvent = (boolean) document.get("showNearbyEvents");
                     } else
                         Log.d("getPreferences", "No such document");
-                    getRecommendationData(userLat, userLng);
+                    getRecommendationData();
                 } else
                     Log.d("getPreferences", "get failed with ", task.getException());
             }
@@ -170,8 +180,8 @@ public class RecommendationsViewModel extends ViewModel {
                                 String datetime_end = testMap.get("event_datetime_end");
                                 String url = testMap.get("eventUrl");
                                 String imageUrl = testMap.get("eventImageUrl");
-                                String lng = testMap.get("eventLongtitude") == null ? "null" : testMap.get("eventLongtitude").toString();
-                                String lat = testMap.get("eventLatitude") == null ? "null" : testMap.get("eventLatitude").toString();
+                                String lng = testMap.get("eventLongtitude") == null ? null : testMap.get("eventLongtitude").toString();
+                                String lat = testMap.get("eventLatitude") == null ? null : testMap.get("eventLatitude").toString();
                                 String location_summary = testMap.get("eventLocationSummary");
                                 String source = testMap.get("eventSource");
 
