@@ -23,6 +23,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +42,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private EventDetailsViewModel eventDetailsViewModel;
+    private Date now;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +106,19 @@ public class EventDetailsActivity extends AppCompatActivity {
                     bookmarkImg.setImageResource(R.drawable.ic_unmarked);
                 }
             }
+        }
+
+        try {
+            now = new Date();
+            Date eventDate = simpleDateFormat.parse(event.getEvent_datetime_end());
+            if(eventDate.before(now)){
+                linkBtn.setText("Event Expired");
+                linkBtn.setEnabled(false);
+            }else{
+
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
         linkBtn.setOnClickListener(new View.OnClickListener() {
