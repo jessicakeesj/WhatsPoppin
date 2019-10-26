@@ -32,7 +32,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,11 +50,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import java.lang.reflect.Array;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -86,7 +82,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
     private Marker userMarker;
     private FusedLocationProviderClient fusedLocationClient;
     private float currentZoomLevel = 17;
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public MapViewFragment() { // Required empty public constructor
 
@@ -230,8 +225,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
     }
 
     private void getFireStoreEvents() {
-        final ArrayList<String> outdatedEvents = new ArrayList<>();
-        final Date now = new Date();
         eventArrayList.clear();
         // get list of all events
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -256,43 +249,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
                             Event event = new Event(name, address, category, description, datetime_start,
                                     datetime_end, url, imageUrl, lng, lat, location_summary, source);
                             eventArrayList.add(event);
-
-                            try {
-                                Date eventDate = simpleDateFormat.parse(datetime_end);
-                                if(eventDate.before(now)){
-                                    outdatedEvents.add(name);
-                                }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
                         } else
                             Log.d("saveToEventArrayList", "No such document");
                     }
-                    updateFireStore(outdatedEvents);
                     getFireStoreUser();
                 } else
                     Log.w("EventListFirestore", "Error getting documents.", task.getException());
             }
         });
-    }
-
-    public void updateFireStore(ArrayList<String> outdated){
-        for(String name : outdated){
-            db.collection("events").document(name)
-                    .delete()
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                        }
-                    });
-        }
-        displayToast("Event List is up to date!");
     }
 
     public void getFireStoreUser() { // get user bookmarks & preference
