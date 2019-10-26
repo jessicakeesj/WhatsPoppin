@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ public class EditPreferencesFragment extends Fragment {
     private boolean showNearbyEventsSwitchValue = false;
     private ChipGroup preferenceCG;
     private Switch notificationSwitch, locationSwitch;
+    private ProgressBar progressBar;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -34,9 +36,21 @@ public class EditPreferencesFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_editpreferences, container, false);
         final EditPreferencesViewModel model = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
 
+        progressBar = root.findViewById(R.id.pBar);
         preferenceCG = root.findViewById(R.id.preference_chipgroup);
         notificationSwitch = root.findViewById(R.id.notification_switch);
         locationSwitch = root.findViewById(R.id.location_switch);
+
+        model.getProgressCompleted().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean completed) {
+                if (completed == false){
+                    progressBar.setVisibility(View.VISIBLE);
+                }else{
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
 
         // Setup Category Chips
         preferenceCG.setChipSpacing(20);
