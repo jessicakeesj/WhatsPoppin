@@ -25,9 +25,9 @@ public class EditPreferencesFragment extends Fragment {
     private ArrayList<String> categories_Selected = new ArrayList<>();
     private boolean receiveNotificationSwitchValue = false;
     private boolean showNearbyEventsSwitchValue = false;
-
     private ChipGroup preferenceCG;
     private Switch notificationSwitch, locationSwitch;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -56,7 +56,10 @@ public class EditPreferencesFragment extends Fragment {
                     newChip.setText(s);
                     newChip.setId(num);
 
-                    if (categories_Selected.contains(s)) newChip.setChecked(true);
+                    if (categories_Selected.contains(s)){
+                        newChip.setChecked(true);
+                    }
+
                     newChip.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

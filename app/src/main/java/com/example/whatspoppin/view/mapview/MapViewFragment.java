@@ -4,20 +4,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import androidx.annotation.Nullable;
-
 import com.example.whatspoppin.model.Event;
 import com.example.whatspoppin.R;
 import com.example.whatspoppin.view.eventlist.EventDetailsActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,9 +38,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.Cluster;
@@ -54,7 +56,7 @@ import java.util.HashMap;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class MapViewFragment extends Fragment implements OnMapReadyCallback {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback, LocationListener {
     private ArrayList<Event> eventArrayList = new ArrayList<>();
     private ArrayList<Event> bookmarkArrayList = new ArrayList<>();
     private ArrayList<MapCluster> clusterMarkers = new ArrayList<>();
@@ -72,6 +74,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private double userLat = 1.3521;
     private double userLng = 103.8198;
 
+    private LocationRequest mLocationRequest;
+    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 2000; /* 2 sec */
+
     private Marker userMarker;
     private FusedLocationProviderClient fusedLocationClient;
     private float currentZoomLevel = 17;
@@ -87,12 +93,35 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 && ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION}, 1);
         }
+        // Create the location request to start receiving updates
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        SettingsClient settingsClient = LocationServices.getSettingsClient(getContext());
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        LocationServices.getFusedLocationProviderClient(getActivity()).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        onLocationChanged(locationResult.getLastLocation());
+                    }
+                },
+                Looper.myLooper());
+        startLocationUpdates();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_mapview, container, false);
 
@@ -102,7 +131,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             usersDoc = db.collection("users").document(currentUser.getUid());
 
         getFireStoreEvents();
-//        realtimeFireStoreData();
 
         // get location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -163,21 +191,32 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return rootView;
     }
 
-    public void realtimeFireStoreData() {
-        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("Listen", "Listen failed.", e);
-                    return;
-                }
-                if (snapshot != null && snapshot.exists())
-                    getFireStoreEvents();
-                else
-                    getFireStoreEvents();
-            }
-        });
+    // Trigger new location updates at interval
+    protected void startLocationUpdates() {
+
+        // Create the location request to start receiving updates
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        SettingsClient settingsClient = LocationServices.getSettingsClient(getContext());
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        LocationServices.getFusedLocationProviderClient(getActivity()).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        onLocationChanged(locationResult.getLastLocation());
+                    }
+                },
+                Looper.myLooper());
     }
 
     private void getFireStoreEvents() {
@@ -321,7 +360,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         // Default position
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(userLat, userLng), 21));
 
-
         mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<MapCluster>() {
             @Override
             public boolean onClusterClick(Cluster<MapCluster> cluster) {
@@ -365,6 +403,37 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        userLat = location.getLatitude();
+        userLng = location.getLongitude();
+        LatLng position = new LatLng(userLat, userLng);
+        if(mMap != null){
+            if (userMarker == null) {
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, currentZoomLevel));
+                userMarker = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(userLat, userLng))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.mm_position)));
+            } else
+                userMarker.setPosition(position);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
     private class MapClusterRenderer extends DefaultClusterRenderer<MapCluster> implements GoogleMap.OnCameraIdleListener {
         private final Context mContext;
 
@@ -387,7 +456,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         @Override
         public void onCameraIdle() {
             currentZoomLevel = mMap.getCameraPosition().zoom;
-//            displayToast(String.valueOf(currentZoomLevel));
         }
     }
 }

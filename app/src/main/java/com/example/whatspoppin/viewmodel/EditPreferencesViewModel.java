@@ -37,23 +37,29 @@ public class EditPreferencesViewModel extends ViewModel {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null)
             usersDoc = db.collection("users").document(currentUser.getUid());
-        getFireStoreEventsData();
-        getFireStoreUserData();
     }
 
     public LiveData<ArrayList<String>> getEventCategories() {
+        getFireStoreEventsData();
+        getFireStoreUserData();
         return eventCategories;
     }
 
     public LiveData<ArrayList<String>> getSelectedCategories() {
+        getFireStoreEventsData();
+        getFireStoreUserData();
         return categoriesSelected;
     }
 
     public LiveData<Boolean> getReceiveNotification() {
+        getFireStoreEventsData();
+        getFireStoreUserData();
         return receiveNotification;
     }
 
     public LiveData<Boolean> getShowNearbyEvents() {
+        getFireStoreEventsData();
+        getFireStoreUserData();
         return showNearbyEvents;
     }
 
