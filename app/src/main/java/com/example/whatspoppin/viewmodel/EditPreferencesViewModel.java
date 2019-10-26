@@ -31,6 +31,8 @@ public class EditPreferencesViewModel extends ViewModel {
     private MutableLiveData<ArrayList<String>> categoriesSelected = new MutableLiveData<>();
     private MutableLiveData<Boolean> receiveNotification = new MutableLiveData<>();
     private MutableLiveData<Boolean> showNearbyEvents = new MutableLiveData<>();
+    private MutableLiveData<Boolean> progressCompleted = new MutableLiveData<>();
+
 
     public EditPreferencesViewModel() {
         // get current login user
@@ -40,6 +42,7 @@ public class EditPreferencesViewModel extends ViewModel {
     }
 
     public LiveData<ArrayList<String>> getEventCategories() {
+        progressCompleted.setValue(false);
         getFireStoreEventsData();
         getFireStoreUserData();
         return eventCategories;
@@ -48,6 +51,7 @@ public class EditPreferencesViewModel extends ViewModel {
     public LiveData<ArrayList<String>> getSelectedCategories() {
         getFireStoreEventsData();
         getFireStoreUserData();
+        progressCompleted.setValue(true);
         return categoriesSelected;
     }
 
@@ -61,6 +65,10 @@ public class EditPreferencesViewModel extends ViewModel {
         getFireStoreEventsData();
         getFireStoreUserData();
         return showNearbyEvents;
+    }
+
+    public LiveData<Boolean> getProgressCompleted() {
+        return progressCompleted;
     }
 
     private void getFireStoreUserData() { // get user preferences settings
