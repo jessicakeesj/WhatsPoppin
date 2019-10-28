@@ -31,7 +31,6 @@ public class EditPreferencesViewModel extends ViewModel {
     private MutableLiveData<ArrayList<String>> categoriesSelected = new MutableLiveData<>();
     private MutableLiveData<Boolean> receiveNotification = new MutableLiveData<>();
     private MutableLiveData<Boolean> showNearbyEvents = new MutableLiveData<>();
-    private MutableLiveData<Boolean> progressCompleted = new MutableLiveData<>();
 
 
     public EditPreferencesViewModel() {
@@ -39,13 +38,11 @@ public class EditPreferencesViewModel extends ViewModel {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null)
             usersDoc = db.collection("users").document(currentUser.getUid());
-        progressCompleted.setValue(false);
     }
 
     public LiveData<ArrayList<String>> getEventCategories() {
         getFireStoreEventsData();
         getFireStoreUserData();
-        progressCompleted.setValue(true);
         return eventCategories;
     }
 
