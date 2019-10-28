@@ -53,14 +53,18 @@ public class EventAdapter extends BaseAdapter implements Filterable {
             sourceString = "<b>" + eventName + "</b> " + "<br>" + dateString + "<br>" + event.getEventLocationSummary();
         }
         eventNameTV.setText(Html.fromHtml(sourceString));
-        try {
-            if (event.getEventImageUrl().contains("http")) {
-                Picasso.get().load(event.getEventImageUrl()).resize(eventImage.getWidth(), 0).into(eventImage);
-            } else {
-                Picasso.get().load("https://www." + event.getEventImageUrl()).resize(eventImage.getWidth(), 0).into(eventImage);
+        if(event.getEventImageUrl().equals("None")){
+            eventImage.setImageResource(R.drawable.ic_brokenimage);
+        }else{
+            try {
+                if (event.getEventImageUrl().contains("http")) {
+                    Picasso.get().load(event.getEventImageUrl()).resize(eventImage.getWidth(), 0).into(eventImage);
+                } else {
+                    Picasso.get().load("https://www." + event.getEventImageUrl()).resize(eventImage.getWidth(), 0).into(eventImage);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         categoryString = "<b>" + "Category: " + "</b> " + event.getEventCategory();
         categoryTV.setText(Html.fromHtml(categoryString));

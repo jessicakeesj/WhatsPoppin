@@ -39,19 +39,19 @@ public class EditPreferencesViewModel extends ViewModel {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null)
             usersDoc = db.collection("users").document(currentUser.getUid());
+        progressCompleted.setValue(false);
     }
 
     public LiveData<ArrayList<String>> getEventCategories() {
-        progressCompleted.setValue(false);
         getFireStoreEventsData();
         getFireStoreUserData();
+        progressCompleted.setValue(true);
         return eventCategories;
     }
 
     public LiveData<ArrayList<String>> getSelectedCategories() {
         getFireStoreEventsData();
         getFireStoreUserData();
-        progressCompleted.setValue(true);
         return categoriesSelected;
     }
 
@@ -65,10 +65,6 @@ public class EditPreferencesViewModel extends ViewModel {
         getFireStoreEventsData();
         getFireStoreUserData();
         return showNearbyEvents;
-    }
-
-    public LiveData<Boolean> getProgressCompleted() {
-        return progressCompleted;
     }
 
     private void getFireStoreUserData() { // get user preferences settings

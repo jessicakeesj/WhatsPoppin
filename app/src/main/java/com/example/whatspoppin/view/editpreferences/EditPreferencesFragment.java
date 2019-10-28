@@ -37,18 +37,15 @@ public class EditPreferencesFragment extends Fragment {
         final EditPreferencesViewModel model = ViewModelProviders.of(this).get(EditPreferencesViewModel.class);
 
         progressBar = root.findViewById(R.id.pBar);
+        progressBar.setVisibility(View.VISIBLE);
         preferenceCG = root.findViewById(R.id.preference_chipgroup);
         notificationSwitch = root.findViewById(R.id.notification_switch);
         locationSwitch = root.findViewById(R.id.location_switch);
 
-        model.getProgressCompleted().observe(this, new Observer<Boolean>() {
+        model.getSelectedCategories().observe(this, new Observer<ArrayList<String>>() {
             @Override
-            public void onChanged(Boolean completed) {
-                if (completed == false){
-                    progressBar.setVisibility(View.VISIBLE);
-                }else{
-                    progressBar.setVisibility(View.INVISIBLE);
-                }
+            public void onChanged(ArrayList<String> selected) {
+                categories_Selected = selected;
             }
         });
 
@@ -57,9 +54,10 @@ public class EditPreferencesFragment extends Fragment {
         model.getEventCategories().observe(this, new Observer<ArrayList<String>>() {
             @Override
             public void onChanged(ArrayList<String> category) {
+
                 // category chips
                 preferenceCG.removeAllViews();
-                categories_Selected = model.getSelectedCategories().getValue();
+                //categories_Selected = model.getSelectedCategories().getValue();
                 int num = 0;
                 for (String s : category) {
                     final Chip newChip = new Chip(getContext());
@@ -88,6 +86,7 @@ public class EditPreferencesFragment extends Fragment {
                     preferenceCG.addView(newChip);
                     num++;
                 }
+                progressBar.setVisibility(View.INVISIBLE);
             }
         });
 
