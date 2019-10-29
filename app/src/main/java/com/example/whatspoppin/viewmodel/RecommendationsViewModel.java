@@ -113,8 +113,8 @@ public class RecommendationsViewModel extends ViewModel {
                             Double doubleLat = Double.parseDouble(lat);
                             Double doubleLng = Double.parseDouble(lng);
                             if (preferences.contains(category) || ((showNearbyEvent) &&
-                                    (doubleLat >= userLat.getValue() - 0.003 && doubleLat <= userLat.getValue() + 0.003) &&
-                                    (doubleLng >= userLng.getValue() - 0.003 && doubleLng <= userLng.getValue() + 0.003))) {
+                                    (doubleLat >= userLat.getValue() - 0.005 && doubleLat <= userLat.getValue() + 0.005) &&
+                                    (doubleLng >= userLng.getValue() - 0.005 && doubleLng <= userLng.getValue() + 0.005))) {
                                 Event event = new Event(name, address, category, description, datetime_start, datetime_end, url,
                                         imageUrl, lng, lat, location_summary, source);
                                 rec_events.add(event);
