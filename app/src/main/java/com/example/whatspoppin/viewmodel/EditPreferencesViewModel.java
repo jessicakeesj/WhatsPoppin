@@ -32,7 +32,6 @@ public class EditPreferencesViewModel extends ViewModel {
     private MutableLiveData<Boolean> receiveNotification = new MutableLiveData<>();
     private MutableLiveData<Boolean> showNearbyEvents = new MutableLiveData<>();
 
-
     public EditPreferencesViewModel() {
         // get current login user
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -41,27 +40,48 @@ public class EditPreferencesViewModel extends ViewModel {
     }
 
     public LiveData<ArrayList<String>> getEventCategories() {
-        getFireStoreEventsData();
-        getFireStoreUserData();
+        getFireStoreChips();
         return eventCategories;
     }
 
     public LiveData<ArrayList<String>> getSelectedCategories() {
-        getFireStoreEventsData();
-        getFireStoreUserData();
+        getFireStoreChips();
         return categoriesSelected;
     }
 
     public LiveData<Boolean> getReceiveNotification() {
-        getFireStoreEventsData();
         getFireStoreUserData();
         return receiveNotification;
     }
 
     public LiveData<Boolean> getShowNearbyEvents() {
-        getFireStoreEventsData();
         getFireStoreUserData();
         return showNearbyEvents;
+    }
+
+    private void getFireStoreChips() { // get user preferences settings
+        final ArrayList<String> selectedCategories = new ArrayList<>();
+        usersDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        // get user selected categories
+                        String b = String.valueOf(document.get("interests"));
+                        if (b != "null" || b != null || b != "[]") {
+                            ArrayList<String> bkm = (ArrayList<String>) document.get("interests");
+                            for (String categoryName : bkm)
+                                selectedCategories.add(categoryName);
+                        }
+                        categoriesSelected.setValue(selectedCategories);
+                        getFireStoreEventsData();
+                    } else
+                        Log.d("getUserDetails", "No such document");
+                } else
+                    Log.d("getUserDetails", "get failed with ", task.getException());
+            }
+        });
     }
 
     private void getFireStoreUserData() { // get user preferences settings
@@ -82,6 +102,7 @@ public class EditPreferencesViewModel extends ViewModel {
                         categoriesSelected.setValue(selectedCategories);
                         receiveNotification.setValue((boolean) document.getBoolean("receiveNotification"));
                         showNearbyEvents.setValue((boolean) document.getBoolean("showNearbyEvents"));
+                        getFireStoreEventsData();
                     } else
                         Log.d("getUserDetails", "No such document");
                 } else

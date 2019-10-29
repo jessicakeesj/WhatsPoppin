@@ -72,8 +72,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
     private DocumentReference usersDoc;
     private FirebaseUser currentUser;
     private ClusterManager<MapCluster> mClusterManager;
-    private double userLat = 1.3521;
-    private double userLng = 103.8198;
+    private double userLat = 1.352083;
+    private double userLng = 103.819839;
 
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
@@ -454,12 +454,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
 
         @Override
         protected boolean shouldRenderAsCluster(final Cluster<MapCluster> cluster) {
+            // set which zoom level should markers should be clustered
             return super.shouldRenderAsCluster(cluster) && currentZoomLevel <= 15;
         }
 
         @Override
         public void onCameraIdle() {
-            currentZoomLevel = mMap.getCameraPosition().zoom;
+            currentZoomLevel = mMap.getCameraPosition().zoom; // set the current zoom level
         }
     }
 }
