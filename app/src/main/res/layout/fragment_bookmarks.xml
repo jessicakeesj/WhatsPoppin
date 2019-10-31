@@ -13,10 +13,19 @@
         android:drawableStart="@drawable/ic_search_foreground"
         android:drawablePadding="0dp"/>
 
+    <TextView
+        android:id="@+id/bookmarks_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="You have not bookmarked any events yet"
+        android:textAlignment="center"
+        android:visibility="gone"/>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:divider="@color/material_blue_grey_800"
-        android:dividerHeight="1dp" />
+        android:dividerHeight="1dp"
+        android:visibility="visible"/>
 </LinearLayout>

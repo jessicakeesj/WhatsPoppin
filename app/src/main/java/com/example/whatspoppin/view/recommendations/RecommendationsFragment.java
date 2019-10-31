@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +44,8 @@ public class RecommendationsFragment extends ListFragment {
     private RecommendAdapter recommendAdapter;
     private ListView eventList;
     private EditText search;
+    private TextView emptyText;
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private DocumentReference usersDoc;
@@ -86,10 +89,9 @@ public class RecommendationsFragment extends ListFragment {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
 
+        emptyText = (TextView) root.findViewById(R.id.rec_empty);
         eventList = (ListView) root.findViewById(android.R.id.list);
         search = (EditText) root.findViewById(R.id.rec_inputSearch);
-
-
 
         model.getRecommendationList().observe(this, new Observer<ArrayList<Event>>() {
             @Override
@@ -97,6 +99,8 @@ public class RecommendationsFragment extends ListFragment {
                 recommendAdapter = new RecommendAdapter(getActivity(), recommendations);
                 eventList.setAdapter(recommendAdapter);
                 recommendAdapter.notifyDataSetChanged();
+                if(recommendations.isEmpty() || recommendations == null )
+                    emptyText.setVisibility(View.VISIBLE);
             }
         });
 

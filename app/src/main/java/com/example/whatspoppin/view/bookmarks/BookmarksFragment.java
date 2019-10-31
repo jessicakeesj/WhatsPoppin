@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.Observer;
@@ -37,7 +39,7 @@ public class BookmarksFragment extends ListFragment {
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private BookmarksViewModel bookmarksViewModel;
-
+    private TextView emptyText;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -52,6 +54,7 @@ public class BookmarksFragment extends ListFragment {
             usersDoc = db.collection("users").document(currentUser.getUid());
         }
 
+        emptyText = (TextView) root.findViewById(R.id.bookmarks_empty);
         eventList = (ListView) root.findViewById(android.R.id.list);
         search = (EditText) root.findViewById(R.id.bookmarks_inputSearch);
 
@@ -62,9 +65,10 @@ public class BookmarksFragment extends ListFragment {
                 bookmarkAdapter = new BookmarkAdapter(getActivity(), bookmarks);
                 eventList.setAdapter(bookmarkAdapter);
                 bookmarkAdapter.notifyDataSetChanged();
+                if(bookmarkArrayList.isEmpty() || bookmarkArrayList == null )
+                    emptyText.setVisibility(View.VISIBLE);
             }
         });
-
         return root;
     }
 

@@ -13,6 +13,14 @@
         android:drawableStart="@drawable/ic_search_foreground"
         android:drawablePadding="0dp"/>
 
+    <TextView
+        android:id="@+id/rec_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="There are no recommendations for you yet"
+        android:textAlignment="center"
+        android:visibility="gone"/>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="fill_parent"
