@@ -87,10 +87,10 @@ public class SignUp extends AppCompatActivity {
         }
 
         //check for valid email and password
-        if(validateEmail(email) && password.length() >= 8 && password.length() <= 20){
+        if(checkEmailForValidity(email) && password.length() >= 8 && password.length() <= 20){
             checkAuth = true;
         }else {
-            if(!validateEmail(email)){
+            if(!checkEmailForValidity(email)){
                 Toast.makeText(getApplicationContext(), "Registration Failed. Please enter a valid email address!", Toast.LENGTH_SHORT).show();
             }else if(password.length() < 8 || password.length() > 20) {
                 Toast.makeText(getApplicationContext(), "Registration Failed. Password should be between 8 and 20 characters!", Toast.LENGTH_SHORT).show();
@@ -130,8 +130,8 @@ public class SignUp extends AppCompatActivity {
     }
 
     //validate email address
-    public static boolean validateEmail(String emailStr) {
-        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(emailStr);
+    public static boolean checkEmailForValidity(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
         return matcher.find();
     }
 }
