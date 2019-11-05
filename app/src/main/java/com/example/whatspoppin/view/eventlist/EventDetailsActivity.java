@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 import com.example.whatspoppin.R;
@@ -145,11 +147,13 @@ public class EventDetailsActivity extends AppCompatActivity {
                         bookmarkList.remove(mock);
                         model.updateBookmarksFirestore(bookmarkList);
                         bookmarkImg.setImageResource(R.drawable.ic_unmarked);
+                        displayToast("Bookmark Removed!");
                     }
                 }else{
                     if(!bookmarkList.contains(event)){
                         bookmarkList.add(event);
                         model.updateBookmarksFirestore(bookmarkList);
+                        displayToast("Event Bookmarked!");
                     }
                     bookmarkImg.setImageResource(R.drawable.ic_marked);
                 }
@@ -171,6 +175,10 @@ public class EventDetailsActivity extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void displayToast(String msg) {
+        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     private String formatDate(String eventDate){

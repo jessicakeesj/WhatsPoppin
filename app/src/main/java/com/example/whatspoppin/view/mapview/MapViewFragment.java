@@ -38,7 +38,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.Cluster;
@@ -47,6 +49,7 @@ import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -132,7 +135,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
         if (currentUser != null)
             usersDoc = db.collection("users").document(currentUser.getUid());
 
-        getFireStoreEvents();
+        realtimeFireStoreData();
 
         // get location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -222,6 +225,26 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
                     }
                 },
                 Looper.myLooper());
+    }
+
+    public void realtimeFireStoreData() {
+        usersDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("Listen", "Listen failed.", e);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    //getFireStoreUser();
+                    getFireStoreEvents();
+                } else {
+                    //getFireStoreUser();
+                    getFireStoreEvents();
+                }
+            }
+        });
     }
 
     private void getFireStoreEvents() {
@@ -319,8 +342,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Loc
                     markerType = MapCluster.EventType.Bookmark;
                 } else if (userPreferences.contains(event.getEventCategory())) { // recommended event markers
                     markerType = MapCluster.EventType.Recommend;
-                } else if ((lat >= userLat - 0.005 && lat <= userLat + 0.005) &&
-                        (lng >= userLng - 0.005 && lng <= userLng + 0.005) && showNearbyEvent) {
+                } else if ((lat >= userLat - 0.018 && lat <= userLat + 0.018) && //0.005
+                        (lng >= userLng - 0.018 && lng <= userLng + 0.018) && showNearbyEvent) {
                     markerType = MapCluster.EventType.Recommend;
                 }
                 MapCluster mm = new MapCluster(name, lat, lng, desc, event, markerType);
